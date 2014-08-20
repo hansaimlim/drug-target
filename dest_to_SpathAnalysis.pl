@@ -13,23 +13,18 @@ my $source = shift @ARGV;
 my $destdir = shift @ARGV;
 my $string = shift @ARGV;
 my $network_upper_dir = shift @ARGV;
-
 chomp($network_upper_dir);
-unless ($network_upper_dir =~ m/\/$/){
-	$network_upper_dir .= "/";	#add the end slash for directory if not entered by the user
-}
-unless(-e $network_upper_dir or mkdir $network_upper_dir){	#create the upper directory for network files
-	die "Unable to create $network_upper_dir\n";
-}
+$network_upper_dir = dirname_endslash($network_upper_dir);
+make_dir($network_upper_dir);
 #-------------------------------------Creation of the input files (network files; node, edge, source, dest) started-------------------------------------
 my %sources = ();
-open(SRC, "<$source") or die "Could not open file $source: $!\n";
-while(<SRC>){
+open my $src, '<', $source or die "Could not open file $source: $!\n";
+while(<$src>){
         my $gene = $_;
         chomp($gene);
         $sources{$gene} = 1;    #switches
 }
-close(SRC);
+close $src;
 
 opendir my $dir, $destdir or die "Could not open directory $destdir: $!\n";
 my @destfiles = readdir $dir;
@@ -49,22 +44,21 @@ for my $dest ( @destfiles ){
 		$sourceoutput = "./" .$network_lower_dir. "/source_" . $1. $2;
 		$destoutput = "./" . $network_lower_dir. "/dest_" . $1 . $2;
 	}
-	unless(-e $network_lower_dir or mkdir $network_lower_dir){
-		die "Unable to create $network_lower_dir\n";
-	}
+	make_dir($network_lower_dir);
 	my $dest_with_path = $destdir . $dest;
-	open(DEST, "<$dest_with_path") or die "Could not open file $dest: $!\n";
+	open my $destination, '<', $dest_with_path or die "Could not open file $dest: $!\n";
 	my %destinations = ();
-	while(<DEST>){
+	while(<$destination>){
 		my $gene = $_;
 		chomp($gene);
 		$destinations{$gene} = 1;       #switches
 	}
-	close(DEST);
-	open(STRING, "<$string") or die "Could not open file $string: $!\n";
-	open(OUTFILE, ">$outfile_edge_temp") or die "Could not open file $outfile_edge_temp: $!\n";
+	close $destination;
+
+	open my $string, '<', $string or die "Could not open file $string: $!\n";
+	open my $outfile, '>', $outfile_edge_temp or die "Could not open file $outfile_edge_temp: $!\n";
 	my $line = 1;   #to skip first line
-	STRING: while(<STRING>){
+	STRING: while(<$string>){
 		if ($line == 1){
 			$line++;
 			next STRING;
@@ -79,25 +73,26 @@ for my $dest ( @destfiles ){
 		if ($destinations{$gene1}) { $destinations{$gene1} = "found"; }
 		if ($destinations{$gene2}) { $destinations{$gene2} = "found"; }
 		if ($sources{$gene1} || $sources{$gene2} || $destinations{$gene1} || $destinations{$gene2}){
-			print OUTFILE $line_intact;
+			print $outfile $line_intact;
 		}
 	}
-	close(OUTFILE);
-	close(STRING);
-	open(SOURCE, ">$sourceoutput") or die "Could not open file $sourceoutput: $!\n";
+	close $outfile;
+	close $string;
+
+	open my $sourceout, '>', $sourceoutput or die "Could not open file $sourceoutput: $!\n";
 	foreach my $source ( keys %sources ){
 		if ($sources{$source} eq "found"){
-			print SOURCE $source, "\n";
+			print $sourceout $source, "\n";
 		}
 	}
-	close(SOURCE);
-	open(DEST, ">$destoutput") or die "Could not open file $destoutput: $!\n";
+	close $sourceout;
+	open my $destout, '>', $destoutput or die "Could not open file $destoutput: $!\n";
 	foreach my $dest ( keys %destinations ){
 		if ($destinations{$dest} eq "found"){
-			print DEST $dest, "\n";
+			print $destout $dest, "\n";
 		}
 	}
-	close(DEST);
+	close $destout;
 
 	# Source and destination files are done at this point
 	# Only edge files will be re-opened for the steps below
@@ -178,19 +173,14 @@ my $outdir_for_spath;	#output directory for shortestpath algorithm
 SUFFIX: {
 	$network_upper_dir =~ m/networks_(.*)\/$/;	#the suffix should NOT have an end slash
 	$suffix_for_spath = $1;
-	
 }
-SLASH: {
-	$network_upper_dir .= "/" unless $network_upper_dir =~ m/\/$/;
-}
+$network_upper_dir = dirname_endslash($network_upper_dir);
 OUTDIR_SPATH: {
 	$network_upper_dir =~ m/networks_(.*)\/$/;
 	$outdir_for_spath = "./spath_" . $1 . "/"; 
 }
 
-unless(-e $outdir_for_spath or mkdir $outdir_for_spath){
-	die "Unable to create $outdir_for_spath\n";
-}
+make_dir($outdir_for_spath);
 opendir my $dir1, $network_upper_dir or die "Cannot open directory $network_upper_dir: $!\n";
 my @lowerdirs = readdir $dir1;
 closedir $dir1;
@@ -232,11 +222,13 @@ my ($pathwayproperties, $pathwaydisconnect);
 SPATHANALYSIS: {
 	$network_upper_dir =~ m/networks_(.*)$/;
 	$spath_analysis_outdir = "./spathanalysis_" . $1;
-	$spath_analysis_outdir .= '/' unless $spath_analysis_outdir =~ m/\/$/;	#put the end slash if missing
 }
+$spath_analysis_outdir = dirname_endslash($spath_analysis_outdir);
 opendir my $dir_spath, $spath_dir or die "Could not open directory $spath_dir: $!\n";
 my @spathfiles = readdir $dir_spath;
 closedir $dir_spath;
+
+make_dir($spath_analysis_outdir);
 
 for my $spathfile ( @spathfiles ){
         next if $spathfile =~ m/^\.+$/; #skip currentdir and upper dir
@@ -294,5 +286,21 @@ for my $spathfile ( @spathfiles ){
         close $spathfileinput;
 }
 #-------------------------------------Analyzing shortestpath output completed---------------------------------------------------------------------------
+#-------------------------------------Subroutines-------------------------------------------------------------------------------------------------------
+sub make_dir {
+	my $dir_to_create = shift @_;	
+	unless(-e $dir_to_create or mkdir $dir_to_create){
+		die "Unable to create $dir_to_create\n";
+	}
+	return;
+}
+sub dirname_endslash {
+	my $dir_to_slash = shift @_;
+	$dir_to_slash .= '/' unless $dir_to_slash =~ m/\/$/;	#put the end slash if missing
+	return $dir_to_slash;
+}
+#-------------------------------------Subroutines-------------------------------------------------------------------------------------------------------
+
+
 
 exit;
