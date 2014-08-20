@@ -18,7 +18,9 @@ chomp($network_upper_dir);
 unless ($network_upper_dir =~ m/\/$/){
 	$network_upper_dir .= "/";	#add the end slash for directory if not entered by the user
 }
-
+unless(-e $network_upper_dir or mkdir $network_upper_dir){	#create the upper directory for network files
+	die "Unable to create $network_upper_dir\n";
+}
 #-------------------------------------Creation of the input files (network files; node, edge, source, dest) started-------------------------------------
 my %sources = ();
 open(SRC, "<$source") or die "Could not open file $source: $!\n";
@@ -34,19 +36,18 @@ my @destfiles = readdir $dir;
 for my $dest ( @destfiles ){
 	next if $dest =~ m/^\.+$/;
 	my $outfile_edge_temp = $dest;
-	my ($network_lower_dir, $sourceoutput, $destoutput, $tempfile1, $tempfile2, $edgeoutput, $nodeoutput);
+	my ($network_lower_dir, $sourceoutput, $destoutput, $tempfile1, $edgeoutput, $nodeoutput);
 	OUTFILE1: {
         $outfile_edge_temp = "./.edgetemp.txt";
         $tempfile1 = "./.spathtemp1.txt";
-        $tempfile2 = "./.spathtemp2.txt";
 	}
 	OUTFILE2:{
-		$dest =~ m/dest(.*)(\.txt|tsv|dat)$/;
+		$dest =~ m/dest_(.*)(\.txt|tsv|dat)$/;
 		$network_lower_dir = $network_upper_dir . $1;
-		$edgeoutput = "./" .$network_lower_dir. "/edge" . $1 . $2;
-		$nodeoutput = "./" . $network_lower_dir. "/node" . $1 . $2;
-		$sourceoutput = "./" .$network_lower_dir. "/source" . $1. $2;
-		$destoutput = "./" . $network_lower_dir. "/dest" . $1 . $2;
+		$edgeoutput = "./" .$network_lower_dir. "/edge_" . $1 . $2;
+		$nodeoutput = "./" . $network_lower_dir. "/node_" . $1 . $2;
+		$sourceoutput = "./" .$network_lower_dir. "/source_" . $1. $2;
+		$destoutput = "./" . $network_lower_dir. "/dest_" . $1 . $2;
 	}
 	unless(-e $network_lower_dir or mkdir $network_lower_dir){
 		die "Unable to create $network_lower_dir\n";
@@ -167,7 +168,7 @@ for my $dest ( @destfiles ){
 closedir $dir;
 
 my $clearcmd = "rm ";
-$clearcmd .= "./.edgetemp.txt ./.spathtemp1.txt ./.spathtemp2.txt";
+$clearcmd .= "./.edgetemp.txt ./.spathtemp1.txt";
 system($clearcmd);	#this command removes the temprary text files
 #-------------------------------------Creation of the input files (network files; node, edge, source, dest) completed-------------------------------------
 #-------------------------------------Running shortestpath algorithm starts here--------------------------------------------------------------------------
@@ -175,8 +176,9 @@ system($clearcmd);	#this command removes the temprary text files
 my $suffix_for_spath;	#file suffix for shortestpath algorithm
 my $outdir_for_spath;	#output directory for shortestpath algorithm
 SUFFIX: {
-	$network_upper_dir =~ m/networks_(.*)\/?$/;
+	$network_upper_dir =~ m/networks_(.*)\/$/;	#the suffix should NOT have an end slash
 	$suffix_for_spath = $1;
+	
 }
 SLASH: {
 	$network_upper_dir .= "/" unless $network_upper_dir =~ m/\/$/;
@@ -186,6 +188,9 @@ OUTDIR_SPATH: {
 	$outdir_for_spath = "./spath_" . $1 . "/"; 
 }
 
+unless(-e $outdir_for_spath or mkdir $outdir_for_spath){
+	die "Unable to create $outdir_for_spath\n";
+}
 opendir my $dir1, $network_upper_dir or die "Cannot open directory $network_upper_dir: $!\n";
 my @lowerdirs = readdir $dir1;
 closedir $dir1;
@@ -227,6 +232,7 @@ my ($pathwayproperties, $pathwaydisconnect);
 SPATHANALYSIS: {
 	$network_upper_dir =~ m/networks_(.*)$/;
 	$spath_analysis_outdir = "./spathanalysis_" . $1;
+	$spath_analysis_outdir .= '/' unless $spath_analysis_outdir =~ m/\/$/;	#put the end slash if missing
 }
 opendir my $dir_spath, $spath_dir or die "Could not open directory $spath_dir: $!\n";
 my @spathfiles = readdir $dir_spath;
