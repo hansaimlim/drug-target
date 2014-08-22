@@ -56,9 +56,7 @@ LINE: while(<$CMAP>){
 		$drug = $words[1];
 		chomp($drug);
 		#get InChIKey of the drug and compare if shared
-		my $url = "http://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/$drug/property/InChIKey/TXT";
-		my $inchikey = get $url;
-		chomp($inchikey);
+		my $inchikey = pubchem_inchikey_by_drug($drug);
 		if ($shared{$inchikey}){
 			$is_drug_shared = 1;	#valid until find next 'x'
 		}
@@ -77,4 +75,12 @@ LINE: while(<$CMAP>){
 	}
 }
 close $CMAP;
+
+sub pubchem_inchikey_by_drug {
+	my $drug = shift @_;
+	my $url = "http://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/$drug/property/InChIKey/TXT";
+	my $inchikey = get $url;
+	chomp($inchikey);
+	return $inchikey;
+}
 exit;
