@@ -36,15 +36,12 @@ InChIKey: {
 		my @cids = pubchem_cids_by_substance($drug);
 		my @unique_cids = uniq @cids;
 		my @inchikeys = ();
+		my $i = 0;
 		foreach my $cid ( @unique_cids ){
 			my $inchi = pubchem_inchikey_by_cid($cid);
 			next unless defined $inchi;
-			@inchikeys = split(/\n/, $inchi);
-			my $i = 0;
-			foreach my $inchi ( @inchikeys ) {
-				$dn_ikeys{$drug}{$i} = $inchi;
-				$i++;
-			}
+			$dn_ikeys{$drug}{$i} = $inchi;
+			$i++;
 		}
 	} else {
 		my @ikeys = split(/\n/, $inchikey);

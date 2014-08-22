@@ -20,6 +20,7 @@ my %nta = ();	#name-target-action hash
 my %switches = ();	#define as they are seen
 my ($name, $target, $action);	#buffer variables
 my $is_uniprotaccession = 0;	#1 if UniProt Accession is open
+my $is_human = 0;		#1 if the target is for human
 my $known_action = 0;	#at the time of writing this code, drugbank.xml contains three answers for known-action for targets; yes, no, unknown.
 
 my $output = "db-name-targetsymbol.tsv";
@@ -95,10 +96,15 @@ my $parser = $factory->parser(
 				print $OUTPUT $name;
 				#-------$OUTPUT---------------
 				}
+				if ($switches{"organism"}){
+					return unless $switches{"target"};	#should be within a target tag
+					if ($char =~ m/^human$/i){ $is_human = 1; }
+				}
 				if ($char =~ m/UniProt\s*Accession/i) { $is_uniprotaccession = 1; }
 				if ($switches{"identifier"}) {
 					return unless $switches{"targets"};
-					return unless $is_uniprotaccession == 1;	#skip other identifiers
+					return unless $is_human;
+					return unless $is_uniprotaccession;	#skip other identifiers
 					$target = $char;
 				#-----------$OUTPUT-----------------
 				print $OUTPUT "\t", $target;
@@ -110,6 +116,7 @@ my $parser = $factory->parser(
 			my $end = shift->{Name};
 			$switches{$end} = 0;
 			$is_uniprotaccession = 0 if $end =~ m/^identifier$/;
+			$is_human = 0 if $end =~ m/^target$/;	#should check if human for each target
 		#--------------$OUTPUT-----------
 		print $OUTPUT "\n" if $end =~ m/^targets$/;
 		#--------------$OUTPUT-----------
