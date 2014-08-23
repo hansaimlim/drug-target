@@ -6,17 +6,41 @@ use List::MoreUtils qw/ uniq /;
 use Data::Dumper;
 
 #----------------------------------------------------------------------------
-# Purpose	: To convert Drugbank Drugnames to InChI keys
-# Input		: Drugbank drug list file
+# Purpose	: To convert list of Drugnames to InChI keys
+# Input		: drug list file (one column)
 # Output	: drugname-InChI Key; two-column (or more) file (tab separated)
 # Author	: Hansaim Lim
 # Date		: 22 Aug, 2014
 #----------------------------------------------------------------------------
 
-die "Usage: $0 <DrugBank drug list>\n" unless @ARGV == 1;
+die "Usage: $0 <drug list file>\n" unless @ARGV == 1;
 my $druglist = shift @ARGV;
 my $outfile = $druglist;
 $outfile =~ s/^(.+)(\..+)$/$1InChIKey$2/;
+
+my $Prestwick = "./cMap_Prestwick_map.tsv";	#Prestwick ID with chemical name map
+open my $PRESTWICK, '<', $Prestwick or die "Could not open file $Prestwick: $!\n";
+my %prestwick_chemicalname = ();
+while (<$PRESTWICK>){
+	my @ids = split(/\t/, $_);
+	my $prestwick = shift @ids;
+	my $chemicalname = shift @ids;
+	chomp($chemicalname);
+	$prestwick_chemicalname{$prestwick} = $chemicalname;
+}
+close $PRESTWICK;
+
+my $drug_inchikey_manualmap = "./cMap_drug_inchikeys_manualmap.tsv";
+open my $MANUALMAP, '<', $drug_inchikey_manualmap or die "Could not open file $drug_inchikey_manualmap: $!\n";
+my %manual_drug_inchikey = ();
+while (<$MANUALMAP>){
+	my @words = split(/\t/, $_);
+	my $drug = shift @words;
+	my $inchikey = shift @words;
+	chomp($inchikey);
+	$manual_drug_inchikey{$drug} = $inchikey;
+}
+close $MANUALMAP;
 
 my $dn_col = 0;	#column index for drugname.
 my %dn_ikeys = ();	#contains drugname-InChI key pair
@@ -31,9 +55,16 @@ LINE: while (<$DRUGLIST>) {
 	}
 	
 InChIKey: {
+	if ($drug =~ m/^Prestwick/i){	#this drug is named by Prestwick ID
+		$drug = $prestwick_chemicalname{$drug};
+	}
 	my $inchikey = pubchem_inchikey_by_drug($drug);
 	if ( not defined $inchikey ) {
 		my @cids = pubchem_cids_by_substance($drug);
+		unless (@cids){	#the drug name is not searchable in pubchem
+			$dn_ikeys{$drug}{0} = $manual_drug_inchikey{$drug};
+			next LINE;
+		}
 		my @unique_cids = uniq @cids;
 		my @inchikeys = ();
 		my $i = 0;
