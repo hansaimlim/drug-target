@@ -31,10 +31,12 @@ my @destfiles = readdir $dir;
 for my $dest ( @destfiles ){
 	next if $dest =~ m/^\.+$/;
 	my ($network_lower_dir, $sourceoutput, $destoutput, $edgeoutput, $nodeoutput);
-	my $outfile_edge_temp = $network_upper_dir;
-        $outfile_edge_temp =~ s/\/(\w+)\/$/\.edge$1temp\.txt/;	#every temp file should be different for multi-task
-        my $tempfile1 = $network_upper_dir;
-	$tempfile1 =~ s/\/(\w+)\/$/\.spath$1temp\.txt/;
+	my ($outfile_edge_temp, $tempfile1);
+	TEMPFILE:{	#every temp file should be different for multi-task
+		$network_upper_dir =~ m/\/([a-zA-Z0-9]+)\/$/;
+		$outfile_edge_temp = "./.edge$1temp.txt";
+		$tempfile1 = "./.spath$1temp.txt";
+	}
 	OUTFILE2:{
 		$dest =~ m/dest_(.*)(\.txt|tsv|dat)$/;
 		$network_lower_dir = $network_upper_dir . $1;
