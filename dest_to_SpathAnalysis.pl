@@ -26,15 +26,15 @@ while(<$src>){
 }
 close $src;
 
-opendir my $dir, $destdir or die "Could not open directory $destdir: $!\n";
+opendir my $dir, $destdir or die "Could not open destdir directory $destdir: $!\n";
 my @destfiles = readdir $dir;
 for my $dest ( @destfiles ){
 	next if $dest =~ m/^\.+$/;
 	my ($network_lower_dir, $sourceoutput, $destoutput, $edgeoutput, $nodeoutput);
 	my $outfile_edge_temp = $network_upper_dir;
-        $outfile_edge_temp =~ s/\/(\w+)\//\.edge$1temp\.txt/;	#every temp file should be different for multi-task
+        $outfile_edge_temp =~ s/\/(\w+)\/$/\.edge$1temp\.txt/;	#every temp file should be different for multi-task
         my $tempfile1 = $network_upper_dir;
-	$tempfile1 =~ s/\/(\w+)\//\.spath$1temp\.txt/;
+	$tempfile1 =~ s/\/(\w+)\/$/\.spath$1temp\.txt/;
 	OUTFILE2:{
 		$dest =~ m/dest_(.*)(\.txt|tsv|dat)$/;
 		$network_lower_dir = $network_upper_dir . $1;
@@ -45,7 +45,7 @@ for my $dest ( @destfiles ){
 	}
 	make_dir($network_lower_dir);
 	my $dest_with_path = $destdir . $dest;
-	open my $destination, '<', $dest_with_path or die "Could not open file $dest: $!\n";
+	open my $destination, '<', $dest_with_path or die "Could not open dest file $dest: $!\n";
 	my %destinations = ();
 	while(<$destination>){
 		my @words = split(/\t/, $_);
@@ -55,8 +55,8 @@ for my $dest ( @destfiles ){
 	}
 	close $destination;
 
-	open my $string, '<', $string or die "Could not open file $string: $!\n";
-	open my $outfile, '>', $outfile_edge_temp or die "Could not open file $outfile_edge_temp: $!\n";
+	open my $string, '<', $string or die "Could not open string file $string: $!\n";
+	open my $outfile, '>', $outfile_edge_temp or die "Could not open outfile_edge_temp file $outfile_edge_temp: $!\n";
 	my $line = 1;   #to skip first line
 	STRING: while(<$string>){
 		if ($line == 1){
@@ -79,14 +79,14 @@ for my $dest ( @destfiles ){
 	close $outfile;
 	close $string;
 
-	open my $sourceout, '>', $sourceoutput or die "Could not open file $sourceoutput: $!\n";
+	open my $sourceout, '>', $sourceoutput or die "Could not open sourceoutput file $sourceoutput: $!\n";
 	foreach my $source ( keys %sources ){
 		if ($sources{$source} eq "found"){
 			print $sourceout $source, "\n";
 		}
 	}
 	close $sourceout;
-	open my $destout, '>', $destoutput or die "Could not open file $destoutput: $!\n";
+	open my $destout, '>', $destoutput or die "Could not open destoutput file $destoutput: $!\n";
 	foreach my $dest ( keys %destinations ){
 		if ($destinations{$dest} eq "found"){
 			print $destout $dest, "\n";
@@ -100,8 +100,8 @@ for my $dest ( @destfiles ){
 	my %ppi = (); #A->B = c hash container
 	my $skipped = 0;
 	my $edgenum = 0;	#to count Number of Edges:
-	open my $edge_temp, '<', $outfile_edge_temp  or die "Could not open file $outfile_edge_temp: $!\n";
-	open my $temp1, '>', $tempfile1 or die "Could not open file $tempfile1: $!\n";
+	open my $edge_temp, '<', $outfile_edge_temp  or die "Could not open outfile_edge_temp file $outfile_edge_temp: $!\n";
+	open my $temp1, '>', $tempfile1 or die "Could not open tempfile1 file $tempfile1: $!\n";
 	EDGE: while(<$edge_temp>){
 		my @words = split(/\t/, $_);
 		if ($words[0] =~ m/^Number/i){
@@ -130,7 +130,7 @@ for my $dest ( @destfiles ){
 
 	#--------------------create node file from temporary edge file-----------------------
 	my %nodes = ();
-	open my $edgetemp, '<', $tempfile1 or die "Could not open file $tempfile1: $!\n";
+	open my $edgetemp, '<', $tempfile1 or die "Could not open file tempfile1 $tempfile1: $!\n";
 	while(<$edgetemp>){
 		my @words = split(/\t/, $_);
 		my $g1 = shift @words;
@@ -140,7 +140,7 @@ for my $dest ( @destfiles ){
 	}
 	close $edgetemp;
 
-	open my $nodetemp, '>', $nodeoutput or die "Could not open file $nodeoutput: $!\n";
+	open my $nodetemp, '>', $nodeoutput or die "Could not open file nodeoutput $nodeoutput: $!\n";
 	my $nodenum = keys %nodes;
 	print $nodetemp "Number of Nodes: ", $nodenum, "\n";
 	foreach my $node ( keys %nodes ){
@@ -150,8 +150,8 @@ for my $dest ( @destfiles ){
 	#--------------------create node file from temporary edge file-----------------------
 
 	#--------------------add the header, Number of Edges: xxxx------------------
-	open my $temp2, '<', $tempfile1 or die "Could not open file $tempfile1: $!\n";
-	open my $edge_final, '>', $edgeoutput or die "Could not open file $edgeoutput: $!\n";
+	open my $temp2, '<', $tempfile1 or die "Could not open tempfile1 file $tempfile1: $!\n";
+	open my $edge_final, '>', $edgeoutput or die "Could not open edgeoutput file $edgeoutput: $!\n";
 	print $edge_final "Number of Edges: ", $edgenum, "\n";
 	while(<$temp2>){
 		print $edge_final $_;
@@ -161,10 +161,6 @@ for my $dest ( @destfiles ){
 	#--------------------add the header, Number of Edges: xxxx------------------
 }
 closedir $dir;
-
-my $clearcmd = "rm ";
-$clearcmd .= "./.edgetemp.txt ./.spathtemp1.txt";
-system($clearcmd);	#this command removes the temprary text files
 #-------------------------------------Creation of the input files (network files; node, edge, source, dest) completed-------------------------------------
 #-------------------------------------Running shortestpath algorithm starts here--------------------------------------------------------------------------
 
@@ -181,7 +177,7 @@ OUTDIR_SPATH: {
 }
 
 make_dir($outdir_for_spath);
-opendir my $dir1, $network_upper_dir or die "Cannot open directory $network_upper_dir: $!\n";
+opendir my $dir1, $network_upper_dir or die "Cannot open network_upper_dir directory $network_upper_dir: $!\n";
 my @lowerdirs = readdir $dir1;
 closedir $dir1;
 
@@ -190,7 +186,7 @@ LOWERDIR: foreach my $lowerdir ( @lowerdirs ){
 	my $currentdir = $network_upper_dir . $lowerdir."/";
 	my ($node, $edge, $source, $dest, $outfile_shortestpath);
 #---------------------------for one drug-----run shortestpath and analyze the output---------------------------------------------------------
-	opendir my $dir_drug, $currentdir or die "Cannot open directory $currentdir: $!\n";
+	opendir my $dir_drug, $currentdir or die "Cannot open currentdir directory $currentdir: $!\n";
 	my @files = readdir $dir_drug;
 	foreach my $file ( @files ){
 		next if $file =~ m/^\.+$/;
@@ -224,7 +220,7 @@ SPATHANALYSIS: {
 	$spath_analysis_outdir = "./spathanalysis_" . $1;
 }
 $spath_analysis_outdir = dirname_endslash($spath_analysis_outdir);
-opendir my $dir_spath, $spath_dir or die "Could not open directory $spath_dir: $!\n";
+opendir my $dir_spath, $spath_dir or die "Could not open spath_dir directory $spath_dir: $!\n";
 my @spathfiles = readdir $dir_spath;
 closedir $dir_spath;
 
@@ -240,9 +236,9 @@ for my $spathfile ( @spathfiles ){
         }
 
 
-        open my $spathfileinput, '<', $spathfile or die "Could not open file $spathfile: $!\n";
-        open my $spath_property, '>', $pathwayproperties or die "Could not open file $pathwayproperties: $!\n";
-        open my $spath_disconnect, '>', $pathwaydisconnect or die "Could not open file $pathwaydisconnect: $!\n";
+        open my $spathfileinput, '<', $spathfile or die "Could not open spathfile file $spathfile: $!\n";
+        open my $spath_property, '>', $pathwayproperties or die "Could not open spathwayproperties file $pathwayproperties: $!\n";
+        open my $spath_disconnect, '>', $pathwaydisconnect or die "Could not open spathwaydisconnect file $pathwaydisconnect: $!\n";
         print $spath_property "source\tdest\tedges\tcum_dist\tavg_dist_per_edge";
         print $spath_disconnect "source\tdestinations_disconnected_to";
         my $current_source_disc = '';   #current source for disconnected pathways
