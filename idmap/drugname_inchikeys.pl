@@ -58,7 +58,11 @@ InChIKey: {
 	if ($drug =~ m/^Prestwick/i){	#this drug is named by Prestwick ID
 		$drug = $prestwick_chemicalname{$drug};
 	}
+	if ($drug =~ m/.*_.*/){	#replace underscores (for example, yohimbic_acid (doesn't work) -> yohimbic acid (works) )
+		$drug =~ tr/_/ /;
+	}
 	my $inchikey = pubchem_inchikey_by_drug($drug);
+
 	if ( not defined $inchikey ) {
 		my @cids = pubchem_cids_by_substance($drug);
 		unless (@cids){	#the drug name is not searchable in pubchem
