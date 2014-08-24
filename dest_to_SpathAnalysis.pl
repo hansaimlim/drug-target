@@ -33,7 +33,7 @@ for my $dest ( @destfiles ){
 	my ($network_lower_dir, $sourceoutput, $destoutput, $edgeoutput, $nodeoutput);
 	my ($outfile_edge_temp, $tempfile1);
 	TEMPFILE:{	#every temp file should be different for multi-task
-		$network_upper_dir =~ m/\/([a-zA-Z0-9]+)\/$/;
+		$network_upper_dir =~ m/\/([a-zA-Z0-9.]+)\/$/;
 		$outfile_edge_temp = "./.edge$1temp.txt";
 		$tempfile1 = "./.spath$1temp.txt";
 	}
