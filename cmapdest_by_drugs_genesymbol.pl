@@ -3,8 +3,8 @@ use strict;
 use warnings;
 use LWP::Simple;
 
-#----------------------------------------------------------------------------------------------------------
-# Purpose	: To process extreme-N-genes.txt file from cMap:drugRL data
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Purpose	: To get destination genes from  extreme-N-genes.txt file from cMap:drugRL data
 #		  The extreme-N-genes.txt contains drugnames and gene symbols that are either highly upregulated
 #		  or downregulated. (top 100 ranked OR bottom 100 ranked)
 # Requirement	: The extreme-N-genes.txt file should start with an 'x' before drugname;
@@ -13,23 +13,27 @@ use LWP::Simple;
 # Output	: one text file per one drug; containing geme symbols and rank
 #		  One text file reporting the number of shared targets for each drug
 # Author	: Hansaim Lim
-# Date		: 14 Jul, 2014
-#----------------------------------------------------------------------------------------------------------
-die "Usage: $0 <extreme-N-genes.txt> <source-InChIKey>\n" unless @ARGV == 2;
-my $cmap = shift @ARGV;
-my $source = shift @ARGV;
+# Date		: 23 Aug, 2014
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+die "Usage: $0 <extreme-N-genes.txt> <cMap common drugname list> <output folder>\n" unless @ARGV == 3;
+my $extreme_N_genes_file = shift @ARGV;
+my $cMap_common_drugs_file = shift @ARGV;
+my $output_folder = shift @ARGV;
+$output_folder = dirname_endslash($output_folder);
+make_dir($output_folder);
 
-my %shared = ();
-open my $src, '<', $source or die "Could not open file $source: $!\n";
-while(<$src>){
+my %common_drugnames = ();
+open my $cMap_commondrugs, '<', $cMap_common_drugs_file or die "Could not open file $cMap_common_drugs_file: $!\n";
+while(<$cMap_commondrugs>){
 	return if $_ =~ m/^\s*$/;	#skip empty line
-	my $ikey = $_;
-	chomp($ikey);
-	$shared{$ikey} = 1;	#like switches
+	my @words = split(/\t/,$_);
+	my $drug = shift @words;
+	my $ikey = shift @words;
+	$common_drugnames{$drug} = 1;	#like switches
 }
-close $src;
+close $cMap_commondrugs;
 
-open my $CMAP, '<', $cmap or die "Could not open file $cmap: $!\n";
+open my $CMAP, '<', $extreme_N_genes_file or die "Could not open file $extreme_N_genes_file: $!\n";
 my $is_drugname = 0;
 my $is_drug_shared = 0;
 my $drug;
@@ -41,34 +45,29 @@ LINE: while(<$CMAP>){
 		$is_drugname = 1;
 		next LINE;
 	}
-	my $line_intact = $_;	#unmodified line
-	my @words = split(/\t/, $_);
-	my $symbol = $words[0];
-	my $rank;
-	my $drugname;
 	if ($_ =~ m/^x\s*$/i){# the previous filehandler should be closed here
-		close $outfilehandle;
+		close $outfilehandle if $is_drug_shared;	#close output filehandler if it was opened
 		$is_drugname = 1;	#the next line contains drugname
 		$is_drug_shared = 0;	#switch on when the drug is shared
 		next LINE;
 	}
+	my $line_intact = $_;	#unmodified line
+	my @words = split(/\t/, $_);
 	if ($is_drugname){
 		$drug = $words[1];
 		chomp($drug);
-		#get InChIKey of the drug and compare if shared
-		my $inchikey = pubchem_inchikey_by_drug($drug);
-		if ($shared{$inchikey}){
+		if ($common_drugnames{$drug}){
 			$is_drug_shared = 1;	#valid until find next 'x'
+			#modifying drug names
+			my $drugname = $drug;
+			$drugname =~ s/(\-)(\d|\w)/_$2/;	#dash to underscore (not minus sign for stereochemistry)
+			$drugname =~ tr/()/__/;			#remove parenthesis
+			$drugname =~ tr/+-/pm/;			#+ -> p; - -> m (stereochemistry, plus or minus)
+			$drugname =~ s/\\/___/;			#backslash -> ___ (three underscores)
+			$drugname =~ s/\//__/;			#slash -> __ (two underscores)
+			my $fileout = $output_folder. "dest_" . $drugname . ".txt";
+			open $outfilehandle, '>', $fileout or die "Could not open file $fileout: $!\n";
 		}
-		#modifying drug names
-		$drugname = $drug;
-		$drugname =~ s/(\-)(\d|\w)/_$2/;	#dash to underscore (not minus sign for stereochemistry)
-		$drugname =~ tr/()/__/;			#remove parenthesis
-		$drugname =~ tr/+-/pm/;			#+ -> p; - -> m (stereochemistry, plus or minus)
-		$drugname =~ s/\\/___/;			#backslash -> ___ (three underscores)
-		$drugname =~ s/\//__/;			#slash -> __ (two underscores)
-		my $fileout = "dest_" . $drugname . ".txt";
-		open $outfilehandle, '>', $fileout or die "Could not open file $fileout: $!\n";
 		$is_drugname = 0;	#the next line is NOT drugname
 	} elsif ($is_drug_shared){
 		print $outfilehandle $line_intact;
@@ -76,11 +75,17 @@ LINE: while(<$CMAP>){
 }
 close $CMAP;
 
-sub pubchem_inchikey_by_drug {
-	my $drug = shift @_;
-	my $url = "http://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/$drug/property/InChIKey/TXT";
-	my $inchikey = get $url;
-	chomp($inchikey);
-	return $inchikey;
+sub make_dir {
+        my $dir_to_create = shift @_;
+        unless(-e $dir_to_create or mkdir $dir_to_create){
+                die "Unable to create $dir_to_create\n";
+        }
+        return;
 }
+sub dirname_endslash {
+        my $dir_to_slash = shift @_;
+        $dir_to_slash .= '/' unless $dir_to_slash =~ m/\/$/;    #put the end slash if missing
+        return $dir_to_slash;
+}
+
 exit;
