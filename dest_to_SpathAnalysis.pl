@@ -30,12 +30,9 @@ opendir my $dir, $destdir or die "Could not open directory $destdir: $!\n";
 my @destfiles = readdir $dir;
 for my $dest ( @destfiles ){
 	next if $dest =~ m/^\.+$/;
-	my $outfile_edge_temp = $dest;
-	my ($network_lower_dir, $sourceoutput, $destoutput, $tempfile1, $edgeoutput, $nodeoutput);
-	OUTFILE1: {
-        $outfile_edge_temp = "./.edgetemp.txt";
-        $tempfile1 = "./.spathtemp1.txt";
-	}
+	my ($network_lower_dir, $sourceoutput, $destoutput, $edgeoutput, $nodeoutput);
+        my $outfile_edge_temp = "./.edgetemp.txt";
+        my $tempfile1 = "./.spathtemp1.txt";
 	OUTFILE2:{
 		$dest =~ m/dest_(.*)(\.txt|tsv|dat)$/;
 		$network_lower_dir = $network_upper_dir . $1;
@@ -49,7 +46,8 @@ for my $dest ( @destfiles ){
 	open my $destination, '<', $dest_with_path or die "Could not open file $dest: $!\n";
 	my %destinations = ();
 	while(<$destination>){
-		my $gene = $_;
+		my @words = split(/\t/, $_);
+		my $gene = shift @words;
 		chomp($gene);
 		$destinations{$gene} = 1;       #switches
 	}
