@@ -8,7 +8,7 @@ use warnings;
 # Author	: Hansaim Lim
 # Date		: 19 Aug, 2014
 #---------------------------------------------------------------------------------------------------------------------------------------------
-die "Usage: $0 <source.txt> <directory for dest files> <String-UniProt-distance file> <foldername: ./networks_XXupmaxXX>\n" unless @ARGV == 4;
+die "Usage: $0 <source.txt> <directory for dest files> <String-distance file> <foldername: ./networks_XXupmaxXX>\n" unless @ARGV == 4;
 my $source = shift @ARGV;
 my $destdir = shift @ARGV;
 my $string = shift @ARGV;
