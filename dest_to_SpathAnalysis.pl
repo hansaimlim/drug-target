@@ -8,7 +8,7 @@ use warnings;
 # Author	: Hansaim Lim
 # Date		: 19 Aug, 2014
 #---------------------------------------------------------------------------------------------------------------------------------------------
-die "Usage: $0 <source.txt> <directory for dest files> <String-distance file> <foldername: ./networks_XXupmaxXX>\n" unless @ARGV == 4;
+die "Usage: $0 <source.txt> <directory for dest files> <String-distance file> <foldername: networks_XXupmaxXX (do not add ./)>\n" unless @ARGV == 4;
 my $source = shift @ARGV;
 my $destdir = shift @ARGV;
 my $string = shift @ARGV;
@@ -28,12 +28,12 @@ close $src;
 
 opendir my $dir, $destdir or die "Could not open destdir directory $destdir: $!\n";
 my @destfiles = readdir $dir;
-for my $dest ( @destfiles ){
+foreach my $dest ( @destfiles ){
 	next if $dest =~ m/^\.+$/;
 	my ($network_lower_dir, $sourceoutput, $destoutput, $edgeoutput, $nodeoutput);
 	my ($outfile_edge_temp, $tempfile1);
 	TEMPFILE:{	#every temp file should be different for multi-task
-		$network_upper_dir =~ m/\/([a-zA-Z0-9.]+)\/$/;
+		$network_upper_dir =~ m/([a-zA-Z0-9.]+)\/$/;
 		$outfile_edge_temp = "./.edge$1temp.txt";
 		$tempfile1 = "./.spath$1temp.txt";
 	}
@@ -175,7 +175,7 @@ SUFFIX: {
 }
 $network_upper_dir = dirname_endslash($network_upper_dir);
 OUTDIR_SPATH: {
-	$network_upper_dir =~ m/networks_(.*)\/$/;
+	$network_upper_dir =~ m/([a-zA-Z0-9.]+)\/$/;
 	$outdir_for_spath = "./spath_" . $1 . "/"; 
 }
 
