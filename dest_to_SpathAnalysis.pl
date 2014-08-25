@@ -38,7 +38,7 @@ foreach my $dest ( @destfiles ){
 		$tempfile1 = "./.spath$1temp.txt";
 	}
 	OUTFILE2:{
-		$dest =~ m/dest_(.*)(\.txt|tsv|dat)$/;
+		$dest =~ m/([a-zA-Z0-9.,_-]+)(\.txt|tsv|dat)$/;
 		$network_lower_dir = $network_upper_dir . $1;
 		$edgeoutput = "./" .$network_lower_dir. "/edge_" . $1 . $2;
 		$nodeoutput = "./" . $network_lower_dir. "/node_" . $1 . $2;
@@ -175,7 +175,7 @@ SUFFIX: {
 }
 $network_upper_dir = dirname_endslash($network_upper_dir);
 OUTDIR_SPATH: {
-	$network_upper_dir =~ m/([a-zA-Z0-9.]+)\/$/;
+	$network_upper_dir =~ m/([a-zA-Z0-9.,_-]+)\/$/;
 	$outdir_for_spath = "./spath_" . $1 . "/"; 
 }
 
