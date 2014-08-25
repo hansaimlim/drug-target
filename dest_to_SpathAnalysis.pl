@@ -50,6 +50,7 @@ for my $dest ( @destfiles ){
 	open my $destination, '<', $dest_with_path or die "Could not open dest file $dest: $!\n";
 	my %destinations = ();
 	while(<$destination>){
+		next if $_ =~ m/^x\s*$/;	#skip the line with only 'x' and/or white spaces
 		my @words = split(/\t/, $_);
 		my $gene = shift @words;
 		chomp($gene);
