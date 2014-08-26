@@ -219,7 +219,7 @@ my $spath_dir = $outdir_for_spath;
 my $spath_analysis_outdir;
 my ($pathwayproperties, $pathwaydisconnect);
 SPATHANALYSIS: {
-	$network_upper_dir =~ m/networks_(.*)$/;
+	$network_upper_dir =~ m/([a-zA-Z0-9.,_-]+)\/$/;
 	$spath_analysis_outdir = "./spathanalysis_" . $1;
 }
 $spath_analysis_outdir = dirname_endslash($spath_analysis_outdir);
@@ -228,7 +228,8 @@ my @spathfiles = readdir $dir_spath;
 closedir $dir_spath;
 
 make_dir($spath_analysis_outdir);
-
+my $spath_analysis_combined = $spath_analysis_outdir."combined_spathdistances.tsv";
+open my $COMBINED_SPATH, '>', $spath_analysis_combined or die "Could not open spathanalysis combined file $spath_analysis_conbined: $!\n";	#to output pathway distances for all drugs
 for my $spathfile ( @spathfiles ){
         next if $spathfile =~ m/^\.+$/; #skip currentdir and upper dir
         OUTPUTFILE: {
@@ -278,12 +279,14 @@ for my $spathfile ( @spathfiles ){
                 }
                 my $avg_dist_per_edge = $cum_dist / $dest_index;
                 print $spath_property "\n", $words[0], "\t", $words[$dest_index], "\t", $dest_index, "\t", $cum_dist, "\t", $avg_dist_per_edge;
+		print $COMBINED_SPATH $cum_dist, "\n";	#a file containing pathway distances for all drugs
         }
 
         close $spath_disconnect;
         close $spath_property;
         close $spathfileinput;
 }
+close $COMBINED_SPATH;
 #-------------------------------------Analyzing shortestpath output completed---------------------------------------------------------------------------
 #-------------------------------------Subroutines-------------------------------------------------------------------------------------------------------
 sub make_dir {
