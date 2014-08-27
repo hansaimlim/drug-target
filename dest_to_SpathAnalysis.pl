@@ -229,7 +229,7 @@ closedir $dir_spath;
 
 make_dir($spath_analysis_outdir);
 my $spath_analysis_combined = $spath_analysis_outdir."combined_spathdistances.tsv";
-open my $COMBINED_SPATH, '>', $spath_analysis_combined or die "Could not open spathanalysis combined file $spath_analysis_conbined: $!\n";	#to output pathway distances for all drugs
+open my $COMBINED_SPATH, '>', $spath_analysis_combined or die "Could not open spathanalysis combined file $spath_analysis_combined: $!\n";	#to output pathway distances for all drugs
 for my $spathfile ( @spathfiles ){
         next if $spathfile =~ m/^\.+$/; #skip currentdir and upper dir
         OUTPUTFILE: {
