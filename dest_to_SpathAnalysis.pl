@@ -279,7 +279,7 @@ for my $spathfile ( @spathfiles ){
                 }
                 my $avg_dist_per_edge = $cum_dist / $dest_index;
                 print $spath_property "\n", $words[0], "\t", $words[$dest_index], "\t", $dest_index, "\t", $cum_dist, "\t", $avg_dist_per_edge;
-		print $COMBINED_SPATH $cum_dist, "\n";	#a file containing pathway distances for all drugs
+		print $COMBINED_SPATH $cum_dist, "\t", $dest_index, "\n";	#a file containing pathway distances and number of edges for all drugs
         }
 
         close $spath_disconnect;
