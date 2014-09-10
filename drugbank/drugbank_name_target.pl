@@ -23,7 +23,7 @@ my $is_uniprotaccession = 0;	#1 if UniProt Accession is open
 my $is_human = 0;		#1 if the target is for human
 my $known_action = 0;	#at the time of writing this code, drugbank.xml contains three answers for known-action for targets; yes, no, unknown.
 
-my $output = "db-name-targetsymbol.tsv";
+my $output = "db-name-target-action.tsv";
 open my $OUTPUT, '>', $output or die "Could not open file $output: $!\n";
 
 my $factory = new XML::SAX::ParserFactory;
@@ -96,6 +96,10 @@ my $parser = $factory->parser(
 				print $OUTPUT $name;
 				#-------$OUTPUT---------------
 				}
+				if ($switches{"actions"}){
+					return unless $switches{"target"};	#for individual target
+					$action = $char if $switches{"action"};
+				}
 				if ($switches{"organism"}){
 					return unless $switches{"target"};	#should be within a target tag
 					if ($char =~ m/^human$/i){ $is_human = 1; }
@@ -107,7 +111,7 @@ my $parser = $factory->parser(
 					return unless $is_uniprotaccession;	#skip other identifiers
 					$target = $char;
 				#-----------$OUTPUT-----------------
-				print $OUTPUT "\t", $target;
+				print $OUTPUT "\t", $target, "\t", $action;
 				#-----------$OUTPUT----------------
 				}
 			}
@@ -117,6 +121,7 @@ my $parser = $factory->parser(
 			$switches{$end} = 0;
 			$is_uniprotaccession = 0 if $end =~ m/^identifier$/;
 			$is_human = 0 if $end =~ m/^target$/;	#should check if human for each target
+			$action = "unknown" if $end =~ m/^target$/;	#initialize action data for each target
 		#--------------$OUTPUT-----------
 		print $OUTPUT "\n" if $end =~ m/^targets$/;
 		#--------------$OUTPUT-----------
