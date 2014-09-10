@@ -1,19 +1,15 @@
 #!/usr/bin/perl
 
 package PUGREST;
-use strict;
 use LWP::Simple;
 use Data::Dumper;
+use DrugTargetBase;
+
+require Exporter;
+@ISA = qw(Exporter);
+@EXPORT = qw(get_InChIKey_by_name get_InChIKey_by_compound get_CID_by_substance get_InChIKey_by_CID);
 
 #--------------------------TEST AREA------------------------
-my $drug1 = "arginine";
-my $drug2 = "lepirudin";
-
-my @drug1 = get_InChIKey_by_name($drug1);
-my @drug2 = get_InChIKey_by_name($drug2);
-print Dumper(@drug1);
-print Dumper(@drug2);
-
 
 #--------------------------TEST AREA------------------------
 
@@ -66,29 +62,4 @@ sub get_InChIKey_by_CID
         return $inchikey;
 }
 
-sub chomp_array
-{
-	#input an array then chomp each element
-	my $r = shift @_;
-	my @array = @$r;
-	my @chomparray;
-	foreach my $i ( @array ){
-		chomp($i);
-		push @chomparray, $i;
-	}
-	return @chomparray;
-}
-
-sub unique
-{
-	#input an array then output an array with duplicated elements removed
-	my $r = shift @_;
-	my @array = @$r;
-	my %seen;
-	foreach my $a ( @array ){
-		$seen{$a} = 1;
-	}
-	my @unique = keys(%seen); 
-#	my @unique = grep { ! $seen{$_}++ } @array;
-	return @unique;
-}
+1;
