@@ -8,7 +8,7 @@ use strict;
 use warnings;
 #----------------------------------------------------------TEST AREA-----------------------------
 my $input = shift @ARGV;
-my $cmap100up = new cMap();
+my $cmap100up = new cMap("100up");
 my $ikey = "PIRYBCJVLMHZOK-UHFFFAOYSA-N";
 print $cmap100up->get_cMap_drugname_by_InChIKey($ikey);
 print Dumper($cmap100up->get_cMap_targets_by_InChIKey($ikey));
@@ -16,7 +16,8 @@ print Dumper($cmap100up->get_cMap_targets_by_InChIKey($ikey));
 sub new
 {
 	my $class = shift;
-	my $self = cMapdata();
+	my $range = shift;
+	my $self = cMapdata($range);
 	bless $self, $class;
 	return $self;
 }
@@ -37,7 +38,16 @@ sub get_cMap_targets_by_InChIKey
 sub cMapdata
 {	
 	#to create the $self body
-	my $file = "../cmap/testcmap.txt";
+	my $range = shift @_;
+	die "Please specify cMap range in new cMap(\"range\")\n"unless $range;
+	my $file = "unknown";
+	#decide which file to open based on the range input
+	$file = "./static/cMap/cMap_drugRL_top50.txt" if $range eq "50up";
+	$file = "./static/cMap/cMap_drugRL_top100.txt" if $range eq "100up";
+	$file = "./static/cMap/cMap_drugRL_bot50.txt" if $range eq "50down";
+	$file = "./static/cMap/cMap_drugRL_bot100.txt" if $range eq "100down";
+	die "cMap ranges can be one of 50up, 100up, 50down, and 100down\n" if $file eq "unknown";
+
 	my ($is_drugname, $drug) = (0, 0);
 	my @ikeys;
 	my @targets;
