@@ -38,6 +38,7 @@ sub get_cMap_targets_by_InChIKey
 sub cMapdata
 {	
 	#to create the $self body
+	#this returns a reference to the hash containing cMap information
 	my $range = shift @_;
 	die "Please specify cMap range in new cMap(\"range\")\n"unless $range;
 	my $file = "unknown";
