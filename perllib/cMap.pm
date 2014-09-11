@@ -7,11 +7,11 @@ use Data::Dumper;
 use strict;
 use warnings;
 #----------------------------------------------------------TEST AREA-----------------------------
-my $input = shift @ARGV;
-my $cmap100up = new cMap("100up");
-my $ikey = "PIRYBCJVLMHZOK-UHFFFAOYSA-N";
-print $cmap100up->get_cMap_drugname_by_InChIKey($ikey);
-print Dumper($cmap100up->get_cMap_targets_by_InChIKey($ikey));
+#my $input = shift @ARGV;
+#my $cmap100up = new cMap("100up");
+#my $ikey = "PIRYBCJVLMHZOK-UHFFFAOYSA-N";
+#print $cmap100up->get_cMap_drugname_by_InChIKey($ikey);
+#print Dumper($cmap100up->get_cMap_targets_by_InChIKey($ikey));
 #----------------------------------------------------------TEST AREA-----------------------------
 sub new
 {
