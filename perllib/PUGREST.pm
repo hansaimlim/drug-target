@@ -18,14 +18,13 @@ sub get_InChIKey_by_name
 	#input PubChem compound or substance name then output an array of InChIKeys if exist
 	my $name = shift @_;
 	my @inchikeys = get_InChIKey_by_compound($name);
-	unless (@inchikeys){
-		my @cids = get_CID_by_substance($name);
-		foreach my $cid ( @cids ){
-			my $inchikey = get_InChIKey_by_CID($cid);
-			push @inchikeys, $inchikey;
-		}
+	my @cids = get_CID_by_substance($name);
+	foreach my $cid ( @cids ){
+		my $inchikey = get_InChIKey_by_CID($cid);
+		push @inchikeys, $inchikey;
 	}
-	return @inchikeys;
+	my @unique_ikeys = unique(\@inchikeys);
+	return @unique_ikeys;
 }
 
 sub get_InChIKey_by_compound
@@ -47,8 +46,8 @@ sub get_CID_by_substance
 	my $url = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/substance/name/$substance/cids/TXT";
 	my $cid = get $url;
 	my @cs = split(/\n/, $cid);
-	my @cids = chomp_array(@cs);
-	my @unique_cids = unique(@cids);
+	my @cids = chomp_array(\@cs);
+	my @unique_cids = unique(\@cids);
 	return @unique_cids;
 }
 sub get_InChIKey_by_CID
