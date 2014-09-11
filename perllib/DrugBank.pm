@@ -7,14 +7,14 @@ use Data::Dumper;
 use strict;
 use warnings;
 #----------------------------------------------------------TEST AREA-----------------------------
-#my $input = shift @ARGV;
-#my $drugbank = new DrugBank();
-#my $ikey = "WGWPRVFKDLAUQJ-UHFFFAOYSA-N";
-#my $ikey2 = "WGWPRVFKDLAUQJ-MITYVQBRSA-N";
-#print $drugbank->get_DrugBank_drugname_by_InChIKey($ikey);
-#print Dumper($drugbank->get_DrugBank_targets_by_InChIKey($ikey));
-#print $drugbank->get_DrugBank_drugname_by_InChIKey($ikey2);
-#print Dumper($drugbank->get_DrugBank_targets_by_InChIKey($ikey2));
+my $input = shift @ARGV;
+my $drugbank = new DrugBank();
+my $ikey = "WGWPRVFKDLAUQJ-UHFFFAOYSA-N";
+my $ikey2 = "WGWPRVFKDLAUQJ-MITYVQBRSA-N";
+print $drugbank->get_DrugBank_drugname_by_InChIKey($ikey);
+print Dumper($drugbank->get_DrugBank_targets_by_InChIKey($ikey));
+print $drugbank->get_DrugBank_drugname_by_InChIKey($ikey2);
+print Dumper($drugbank->get_DrugBank_targets_by_InChIKey($ikey2));
 #----------------------------------------------------------TEST AREA-----------------------------
 sub new
 {
@@ -57,7 +57,6 @@ sub DrugBankData
 		my @ikeys = get_InChIKey_by_name($drugname);
 		foreach my $ikey (@ikeys){
 			chomp($ikey);
-		print $ikey, "\n";
 			$DrugBankData{$ikey}{drugname} = $drugname;
 			foreach my $target (keys %target_action){
 				$DrugBankData{$ikey}{targets}{$target} = $target_action{$target};
