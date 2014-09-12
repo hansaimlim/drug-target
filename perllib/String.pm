@@ -88,7 +88,7 @@ sub StringData
 	#Distances are calculated based on the confidence score: D = (1000-S)/1000
 	#At this point, the redundant networks are preserved intentionally
 	#The redundancies will be removed when getting edges from node
-        my $file = "./static/String/test.txt";
+        my $file = "./static/String/9606.protein.links.v9.1-GS-dist.txt";
         my %Data;
         open my $String, '<', $file or die "Could not open DrugBank file, $file: $!\n";
         while (my $line = <$String>){
