@@ -21,6 +21,14 @@ sub new
 	bless $self, $class;
 	return $self;
 }
+sub get_cMap_InChIKey
+{
+	#get all the available InChIKeys in cMap DrugRL data
+	#returns a reference array
+	my( $self ) = @_;
+	my @ikeys = keys( %$self );
+	return \@ikeys;
+}
 sub get_cMap_drugname_by_InChIKey
 {
 	#input InChIKey then output the drugname

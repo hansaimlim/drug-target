@@ -15,11 +15,14 @@ use warnings;
 #print $string->get_String_distance($G1, $G2);	#0.673
 #my $edgeref = $string->get_String_edges_by_nodes(\@nodes);
 #my %edges = %$edgeref;
+#my $num_edges = 0;
 #foreach my $node1 (keys %edges){
 #	foreach my $node2 (keys $edges{$node1}){
-#		print "$node1\t$node2\t", values($edges{$node1}), "\n";
+#		print "$node1\t$node2\t", $edges{$node1}{$node2}, "\n";
+#		$num_edges++;
 #	}
 #}
+#print $num_edges,"\n";
 #----------------------------------------------------------TEST AREA-----------------------------
 sub new
 {
