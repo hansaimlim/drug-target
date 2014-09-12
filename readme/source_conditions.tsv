@@ -1,0 +1,20 @@
+This readme file explains the conditional logic for selecting source genes for shortest pathway networks.
+As the conditions are not completely independent of each other, some possibilities are excluded.
+
+Conditions
+A	: Is drug-target pair listed in DrugBank?
+B	: Is drug-target pair listed in STITCH protein chemical links?
+C	: Is drug-target action known in DrugBank?
+D	: Is drug-target prediction score over 900 in STITCH data above in condition B?
+
+Logic Table
+	A	B	C	D	description
+1	T	T	T	T	most strict
+2	T	T	T	F	strict on DrugBank, mild on STITCH
+3	T	T	F	T	strict on STITCH, mild on DrugBank
+4	T	T	F	F	mild on both databases, as long as they agree each other
+5	T	F	T	F	STITCH excluded, strict on DrugBank
+6	T	F	F	F	STITCH excluded, mild on DrugBank
+7	F	T	F	T	DrugBank excluded, strict STITCH
+8	F	T	F	F	DrugBank excluded, mild STITCH
+9	F	F	F	F	void
