@@ -45,20 +45,57 @@ sub get_pre_source
 	}
 	return \%pre_sources;
 }
-sub get_destination
+sub get_pre_destination
 {
-
+	my ($cmap_ref) = @_;
+	my @cMap_InChIKeys = $cmap_ref->get_cMap_InChIKey();
+	my %pre_destinations;
+	foreach my $ikey (@cMap_InChIKeys){
+		my $drugname = $cmap_ref->get_cMap_drugname_by_InChIKey($ikey);
+		my $targets_ref = $cmap_ref->get_cMap_targets_by_InChIKey($ikey);
+		my @genes = @$targets_ref;
+		$pre_destinations{$drugname} = [@genes];
+	}
+	return  \%pre_destinations;
 }
-sub get_node
+sub make_node
 {
-
+	
 }
-sub get_edge
+sub get_network
 {
-	my $string = String->new();
-	my $G1 = "ARF5";
-	my $G2 = "VAMP3";
-	my @nodes = ('PSD1', 'VAMP3', 'ACAP1', 'QCR1', 'MLF2');
+	my ($string_ref, $pre_sources_ref, $pre_destinations_ref) = @_;
+	my %pre_sources = %$pre_sources_ref;
+	my %pre_destinations = %$pre_destinations_ref;
+	my (%sources, %destinations, %nodes, %edges);	#containers for final networks
+
+	foreach my $drug (keys %pre_destinations){
+		next unless defined($pre_sources{$drug});	#skip if not found in source (STITCH + DrugBank)
+		my @pre_dests = $pre_destinations{$drug};
+		my @destinations;	#for final destinations
+		#get destinations if corresponding edge exists
+		foreach my $pre_dest (@pre_dests){
+			my $edge_ref = $string_ref->get_String_edges_by_single_node($pre_dest);
+			if ($edge_ref){
+				push @destinations, $pre_dest;
+			}
+		}
+		#get sources if corresponding edge exists
+		my @pre_srcs = $pre_sources{$drug};
+		my @sources;
+		foreach my $pre_src (@pre_srcs){
+			my $edge_ref = $string_ref->get_String_edges_by_single_node($pre_src);
+			if ($edge_ref){
+				push @sources, $pre_src;
+			}
+		}
+		#get nodes from sources and destinations
+
+		#get edges from nodes
+
+		#insert into the bigger container for each type of networks by drugnames
+	}
+	
 	print $string->get_String_distance($G1, $G2);   #0.673
 	my $edgeref = $string->get_String_edges_by_nodes(\@nodes);
 	my %edges = %$edgeref;
