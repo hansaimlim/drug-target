@@ -45,6 +45,34 @@ sub reverse_edges
 	}
 	return \%rev;
 }
+sub get_String_edges_by_single_node
+{
+	#input : a single node reference (genesymbol)
+	#output: reference to hash of edges
+	my( $self, $noderef ) = @_;
+	my $g1 = $$noderef;
+	my %edges;
+	my $rev = reverse_edges($self);
+	if ( !( defined($self->{$node}) or defined($self->{$node})) ){
+		return 0;	#not found in the PPI, return 0
+	}
+	if (defined($self->{$node})){
+		my $ref = $self->{$node};
+		my %n = %$ref;
+		foreach my $g2 (keys %n){
+			$edges{$g1}{$g2} = $n{$g2};
+		}
+	} 
+	if (defined($rev->{$node})) {
+		my $ref = $rev->{$node};
+		my %n = %$ref;
+		foreach my $g2 (keys %n){
+			$edges{$g1}{$g2} = $n{$g2};
+		}
+	}
+	}
+        return \%edges;
+}
 sub get_String_edges_by_nodes
 {
 	#preserving redundant edges is useful here
@@ -63,7 +91,8 @@ sub get_String_edges_by_nodes
 			foreach my $g2 (keys %n){
 				$edges{$g1}{$g2} = $n{$g2};
 			}
-		} elsif (defined($rev->{$node})) {
+		} 
+		if (defined($rev->{$node})) {
 			my $ref = $rev->{$node};
 			my %n = %$ref;
 			foreach my $g2 (keys %n){
