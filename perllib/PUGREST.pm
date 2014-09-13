@@ -31,7 +31,7 @@ sub get_InChIKey_by_compound
 {
 	#input PubChem compound name then output an array of InChIKeys if exist
 	my $compound = shift @_;
-	my $url = "http://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/$compound/property/InChIKey/TXT";
+	my $url = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/$compound/property/InChIKey/TXT";
 	my $inchikey = get $url;
 	my @is = split(/\n/, $inchikey);
 	my @ikeys = chomp_array(\@is);
@@ -55,7 +55,7 @@ sub get_InChIKey_by_CID
         #input PubChem CID then output InChIKey
         #one CID gives only one InChIKey
 	my $cid = shift @_;
-        my $url = "http://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/$cid/property/InChIKey/TXT";
+        my $url = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/$cid/property/InChIKey/TXT";
         my $inchikey = get $url;
         chomp($inchikey);
         return $inchikey;
