@@ -3,8 +3,9 @@ drug-target
 
 Summer 2014 project for drug-target pathway analysis
 
-A part of Dr. Xie's project, about drug development.
 This project aims to reveal the relationships among drug-gene-protein chain reactions by examining multiple databases.
+This project is a part of Dr. Xie's project, about drug development.
+
 
 At this point (14 Sep. 2014) the databases are:
 DrugBank - http://www.drugbank.ca/
