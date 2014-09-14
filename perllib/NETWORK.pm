@@ -40,7 +40,7 @@ sub get_pre_source
 			next if $stitch_ref->get_STITCH_score($ikey, $target2) < 900;	#at least 900
 			push @genes, $target2;
 		}
-		my @uniq_pre_srcs = unique(@genes);
+		my @uniq_pre_srcs = unique(\@genes);
 		$pre_sources{$drugname} = [@uniq_pre_srcs];
 	}
 	return \%pre_sources;
