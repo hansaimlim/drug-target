@@ -24,7 +24,11 @@ sub get_InChIKey_by_name
 		push @inchikeys, $inchikey;
 	}
 	my @unique_ikeys = unique(\@inchikeys);
-	return @unique_ikeys;
+	if (@unique_ikeys){
+		return @unique_ikeys;
+	} else {
+		return;
+	}
 }
 
 sub get_InChIKey_by_compound
@@ -36,7 +40,11 @@ sub get_InChIKey_by_compound
 	my @is = split(/\n/, $inchikey);
 	my @ikeys = chomp_array(\@is);
 	my @unique_ikeys = unique(\@ikeys);
-	return @unique_ikeys;
+	if (@unique_ikeys){
+		return @unique_ikeys;
+	} else {
+		return;
+	}
 }
 
 sub get_CID_by_substance
@@ -48,7 +56,11 @@ sub get_CID_by_substance
 	my @cs = split(/\n/, $cid);
 	my @cids = chomp_array(\@cs);
 	my @unique_cids = unique(\@cids);
-	return @unique_cids;
+	if (@unique_cids){
+		return @unique_cids;
+	} else {
+		return;
+	}
 }
 sub get_InChIKey_by_CID
 {
@@ -58,7 +70,11 @@ sub get_InChIKey_by_CID
         my $url = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/$cid/property/InChIKey/TXT";
         my $inchikey = get $url;
         chomp($inchikey);
-        return $inchikey;
+	if (defined($inchikey)){
+		return $inchikey;
+	} else {
+		return;
+	}
 }
 
 1;
