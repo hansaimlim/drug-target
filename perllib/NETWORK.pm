@@ -11,13 +11,12 @@ use strict;
 use warnings;
 
 #-----------------------------------------------------TEST AREA-------------------------------------------------------------------
-my $cmapobj = cMap->new("50up");
-my $dbobj = DrugBank->new();
-my $STobj = STITCH->new();
-my $presrcref = get_pre_source($cmapobj, $dbobj, $STobj);
-print Dumper($presrcref);
+#my $cmapobj = cMap->new("50up");
+#my $dbobj = DrugBank->new();
+#my $STobj = STITCH->new();
+#my $presrcref = get_pre_source($cmapobj, $dbobj, $STobj);
+#print Dumper($presrcref);
 #-----------------------------------------------------TEST AREA-------------------------------------------------------------------
-
 sub get_pre_source
 {
 	my ($cmap_ref, $drugbank_ref, $stitch_ref) = @_;	#the references to databases
