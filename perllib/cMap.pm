@@ -85,6 +85,8 @@ sub cMapdata
 			$drug = $words[1];
 			chomp($drug);
 			@ikeys = get_InChIKey_by_name($drug);	#get InChIKeys
+			my $special_ikey = get_InChIKey_by_chemicalID($drug);	#use manually found idmap
+			push @ikeys, $special_ikey if $special_ikey;
 			$is_drugname = 0;
 		} else {
 			my $target = shift @words;
