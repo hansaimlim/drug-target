@@ -51,7 +51,8 @@ sub get_STITCH_score
 }
 sub STITCHData
 {
-	#create STITCH object from pre-converted (CIDs to InChIKeys; ENSPs to GeneSymbols) with minimum prediction score 900
+	#create STITCH object from pre-converted (CIDs to InChIKeys; ENSPs to UniProtKB) with minimum prediction score 900
+	#the targets are in genename format; NOT in UniProtKB
         my $file = "./static/STITCH/9606.protein_chemical.links.v4.0InChIKey_GS_min900.tsv";
         my %Data;
         open my $STITCH, '<', $file or die "Could not open DrugBank file, $file: $!\n";
@@ -59,13 +60,13 @@ sub STITCHData
                 my @words = split(/\t/, $line);
                 my $ikey = shift @words;
 		my $target = shift @words;
+		$target = get_genename_by_UniProtKB($target);	#targets are in genenames
 		my $score = shift @words;
 		chomp($score);
 		$Data{$ikey}{$target} = $score;
         }
         close $STITCH;
-        my $ref = \%Data;
-        return $ref;
+        return \%Data;
 }
 
 1;
