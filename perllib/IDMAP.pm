@@ -7,7 +7,7 @@ use Data::Dumper;
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT = qw(UniProtKB_genename genename_UniProtKB);
+@EXPORT = qw(get_genename_by_UniProtKB);
 
 #------------------------------------------------TEST AREA------------------------------------
 #my $u = "GGACT_HUMAN";
