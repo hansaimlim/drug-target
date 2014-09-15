@@ -17,12 +17,16 @@ require Exporter;
 sub get_genename_by_UniProtKB
 {
 	#input  : UniProtKB (one)
-	#output : genename (one)
+	#output : genename (one) or 0
 	my $uniprot = shift @_;
 	$uniprot = remove_HUMAN_suffix($uniprot);
 	my $ug_ref = UniProtKB_genename();
 	my $genename = $ug_ref->{$uniprot};
-	return $genename;	
+	if (defined($genename)){
+		return $genename;
+	} else {
+		return 0;
+	}	
 }
 sub UniProtKB_genename
 {	#han@naz:~/drug-target/perllib/static/idmap$ cut -f1 genename_UniProtsymbol.tsv | sort | uniq | wc -l
