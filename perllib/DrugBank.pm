@@ -3,6 +3,7 @@
 package DrugBank;
 use DrugTargetBase;
 use PUGREST;
+use IDMAP;
 use Data::Dumper;
 use strict;
 use warnings;
