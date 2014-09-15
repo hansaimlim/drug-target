@@ -5,6 +5,7 @@ use cMap;
 use DrugBank;
 use STITCH;
 use String;
+use IDMAP;
 use DrugTargetBase;
 use Data::Dumper;
 use strict;
