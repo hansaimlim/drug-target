@@ -4,6 +4,7 @@ package cMap;
 use DrugTargetBase;
 use PUGREST;
 use Data::Dumper;
+use IDMAP;
 use strict;
 use warnings;
 #----------------------------------------------------------TEST AREA-----------------------------
@@ -70,8 +71,9 @@ sub cMapdata
 		if ($line =~ m/^x\s*$/i){
 			$is_drugname = 1;
 			foreach my $ikey (@ikeys) {
+				my @uniq_targets = unique(\@targets);	#remove redundant targets
 				$cMap{$ikey}{drugname} = $drug;
-				$cMap{$ikey}{targets} = [@targets]; 
+				$cMap{$ikey}{targets} = [@uniq_targets]; 
 			}
 			undef @ikeys;	#should take a new set of InChIKeys
 			undef $drug;	#should take a new drug name
@@ -86,13 +88,19 @@ sub cMapdata
 			$is_drugname = 0;
 		} else {
 			my $target = shift @words;
-			push @targets, $target;
+			my $genename = get_genename_by_UniProtKB($target);
+			if ($genename){		#if the target format is UniProtKB and listed in IDMAP file
+				push @targets, $genename;
+			} else {
+				push @targets, $target;
+			}
 		}
 	}
 	close $CMAP;
 	foreach my $ikey (@ikeys) {#for the last drug
+		my @uniq_targets = unique(\@targets);	#remove redundant targets
 		$cMap{$ikey}{drugname} = $drug;
-		$cMap{$ikey}{targets} = [@targets]; 
+		$cMap{$ikey}{targets} = [@uniq_targets]; 
 	}
 	my $cMapref = \%cMap;
 	return $cMapref;
