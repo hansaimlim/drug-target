@@ -60,7 +60,7 @@ sub STITCHData
                 my @words = split(/\t/, $line);
                 my $ikey = shift @words;
 		my $target = shift @words;
-		$target = get_genename_by_UniProtKB($target);	#targets are in genenames
+		$target = get_genename_by_UniProtKB($target) if get_genename_by_UniProtKB($target);	#targets are in genenames
 		my $score = shift @words;
 		chomp($score);
 		$Data{$ikey}{$target} = $score;
