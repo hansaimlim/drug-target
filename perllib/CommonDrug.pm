@@ -47,19 +47,25 @@ sub get_common_drugs_by_intersection
         #output: list of drug names for each database of drugs in both (cMap) and (DrugBank && STITCH)
         my ($cmap_ref, $drugbank_ref, $stitch_ref) = @_;        #the references to databases
         my @cMap_InChIKeys = $cmap_ref->get_cMap_InChIKey();
-        my (%cMap_drugnames, %DrugBank_drugnames, %STITCH_drugnames);
+        my (%cMap_drugnames, %DrugBank_drugnames, %STITCH_drugikeys);
+	
+	my $idmap_file = "./static/idmap/DrugBank_STITCH.tsv";
+	open my $DS_FH, '>', $idmap_file or die "Could not open output file $idmap_file: $!\n";
+	print $DS_FH "DrugBank\tSTITCH\tcMap\n";
         foreach my $ikey (@cMap_InChIKeys){
                 my $cmapdrug = $cmap_ref->get_cMap_drugname_by_InChIKey($ikey);
                 my $DBdrug = $drugbank_ref->get_DrugBank_drugname_by_InChIKey($ikey);
-                my $STdrug = $stitch_ref->get_STITCH_drugname_by_InChIKey($ikey);
-                if ( defined($DBdrug) && defined($STdrug) ){
+                my $STdrugtarget_ref = $stitch_ref->get_STITCH_targets_by_InChIKey($ikey);
+                if ( defined($DBdrug) && defined($STdrugtarget_ref) ){
                         $DrugBank_drugnames{$DBdrug} = 1;
-                        $STITCH_drugnames{$STdrug} = 1;
+                        $STITCH_drugikeys{$ikey} = 1;
                         $cMap_drugnames{$cmapdrug} = 1;
+			print $DS_FH "$DBdrug\t$ikey\t$cmapdrug\n";	#print out for common drug idmap file
                 }
         }
+	close $DS_FH;
 	my $dir = "./static/common_drugs/intersection/";
-	print_common_drugs(\%cMap_drugnames, \%DrugBank_drugnames, \%STITCH_drugnames, $dir);
+	print_common_drugs(\%cMap_drugnames, \%DrugBank_drugnames, \%STITCH_drugikeys, $dir);
 	return;
 }
 sub print_common_drugs
