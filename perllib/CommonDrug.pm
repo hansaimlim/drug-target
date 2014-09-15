@@ -23,23 +23,23 @@ sub get_common_drugs_by_union
         #output: list of drug names for each database of drugs in both (cMap) and (DrugBank U STITCH)
         my ($cmap_ref, $drugbank_ref, $stitch_ref) = @_;        #the references to databases
         my @cMap_InChIKeys = $cmap_ref->get_cMap_InChIKey();
-        my (%cMap_drugnames, %DrugBank_drugnames, %STITCH_drugnames);
+        my (%cMap_drugnames, %DrugBank_drugnames, %STITCH_drugikeys);
         foreach my $ikey (@cMap_InChIKeys){
                 my $cmapdrug = $cmap_ref->get_cMap_drugname_by_InChIKey($ikey);
                 my $DBdrug = $drugbank_ref->get_DrugBank_drugname_by_InChIKey($ikey);
-                my $STdrug = $stitch_ref->get_STITCH_drugname_by_InChIKey($ikey);
+                my $STdrugtarget_ref = $stitch_ref->get_STITCH_targets_by_InChIKey($ikey);
                 if ( defined($DBdrug) ){
                         $DrugBank_drugnames{$DBdrug} = 1;
                         $cMap_drugnames{$cmapdrug} = 1;
                 }
-                if ( defined($STdrug) ){
-                        $STITCH_drugnames{$STdrug} = 1;
+                if ( defined($STdrugtarget_ref) ){
+                        $STITCH_drugikeys{$ikey} = 1;
                         $cMap_drugnames{$cmapdrug} = 1;
                 }
         }
 	my $dir = "./static/common_drugs/union/";
-	print_common_drugs(\%cMap_drugnames, \%DrugBank_drugnames, \%STITCH_drugnames, $dir);
-	return 0;
+	print_common_drugs(\%cMap_drugnames, \%DrugBank_drugnames, \%STITCH_drugikeys, $dir);
+	return;
 }
 sub get_common_drugs_by_intersection
 {
@@ -60,7 +60,7 @@ sub get_common_drugs_by_intersection
         }
 	my $dir = "./static/common_drugs/intersection/";
 	print_common_drugs(\%cMap_drugnames, \%DrugBank_drugnames, \%STITCH_drugnames, $dir);
-	return 0;
+	return;
 }
 sub print_common_drugs
 {
@@ -87,6 +87,6 @@ sub print_common_drugs
 		print $ST_FH $stdrug, "\n";
 	}
 	close $ST_FH;
-	return 0;
+	return;
 }
 1;
