@@ -40,6 +40,7 @@ sub get_DrugBank_targets_by_InChIKey
 }
 sub DrugBankData
 {
+	#target IDs are in genename format, NOT UniProtKB.
 	my $file = "./static/DrugBank/DrugBank_name_target_action.tsv";
 	my %DrugBankData;
 	open my $DrugBank, '<', $file or die "Could not open DrugBank file, $file: $!\n";
@@ -50,6 +51,7 @@ sub DrugBankData
 		while(@words){
 			my $target = shift @words;
 			chomp($target);
+			$target = get_genename_by_UniProtKB($target);	#target IDs are converted to genename
 			my $action = shift @words;
 			chomp($action);
 			$target_action{$target} = $action;
@@ -65,8 +67,7 @@ sub DrugBankData
 	
 	}
 	close $DrugBank;
-	my $ref = \%DrugBankData;
-	return $ref;
+	return \%DrugBankData;
 }
 
 1;
