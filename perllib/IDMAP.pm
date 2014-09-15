@@ -13,6 +13,8 @@ require Exporter;
 #my $u = "GGACT_HUMAN";
 #my $g = get_genename_by_UniProtKB($u);	#A2LD1
 #print $g, "\n";
+#print get_genename_by_UniProtKB("nothing"), "\n";	# 0
+#print get_genename_by_UniProtKB("GGACT"), "\n";	#A2LD1
 #------------------------------------------------TEST AREA------------------------------------
 sub get_genename_by_UniProtKB
 {
