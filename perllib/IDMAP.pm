@@ -7,7 +7,7 @@ use Data::Dumper;
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT = qw(get_genename_by_UniProtKB);
+@EXPORT = qw(get_genename_by_UniProtKB get_InChIKey_by_chemicalID);
 
 #------------------------------------------------TEST AREA------------------------------------
 #my $u = "GGACT_HUMAN";
@@ -16,6 +16,33 @@ require Exporter;
 #print get_genename_by_UniProtKB("nothing"), "\n";	# 0
 #print get_genename_by_UniProtKB("GGACT"), "\n";	#A2LD1
 #------------------------------------------------TEST AREA------------------------------------
+sub get_InChIKey_by_chemicalID
+{
+	#use manually found IDmap file in idmap static folder
+	#input  : chemical ID (e.g. Chicago_Sky_Blue_6B)
+	#output : InChIKey    (e.g. UPKAWFACSJWKND-MAQYYZNPSA-J)
+	my $chemical = shift @_;
+	my $hash_ref = InChIKey_by_chemicalID();	#hash reference (chemical ID => InChIKey)
+	my $ikey = $hash_ref->{$chemical};
+	return if $ikey =~ m/unknown/i;
+	return unless defined($ikey);
+	return $ikey;
+}
+sub InChIKey_by_chemicalID
+{
+	my $file = "./static/idmap/cMap_manuallyfound_maps.tsv";
+	my %hash;
+	open my $ID, '<', $file or die "Could not open Idmap file $file: $!\n";
+	while (my $line = <$ID>){
+		my @words = split(/\t/, $line);
+		my $chemical = shift @words;
+		my $ikey = shift @words;
+		chomp($ikey);
+		$hash{$chemical} = $ikey;
+	}
+	close $ID;
+	return \%hash;
+}
 sub get_genename_by_UniProtKB
 {
 	#input  : UniProtKB (one)
