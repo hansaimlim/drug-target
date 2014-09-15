@@ -51,7 +51,7 @@ sub DrugBankData
 		while(@words){
 			my $target = shift @words;
 			chomp($target);
-			$target = get_genename_by_UniProtKB($target);	#target IDs are converted to genename
+			$target = get_genename_by_UniProtKB($target) if get_genename_by_UniProtKB($target);	#target IDs are converted to genename
 			my $action = shift @words;
 			chomp($action);
 			$target_action{$target} = $action;
