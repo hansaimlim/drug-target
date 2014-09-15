@@ -3,6 +3,7 @@
 package String;
 use DrugTargetBase;
 use PUGREST;
+use IDMAP;
 use Data::Dumper;
 use strict;
 use warnings;
@@ -127,12 +128,13 @@ sub StringData
                 my @words = split(/\t/, $line);
                 my $gene1 = shift @words;
                 my $gene2 = shift @words;
+		$gene1 = get_genename_by_UniProtKB($gene1) if get_genename_by_UniProtKB($gene1);	#target id format conversion to genename
+		$gene2 = get_genename_by_UniProtKB($gene2) if get_genename_by_UniProtKB($gene2);	#target id format conversion to genename
                 my $distance = shift @words;
                 chomp($distance);
                 $Data{$gene1}{$gene2} = $distance;
         }
         close $String;
-        my $ref = \%Data;
-        return $ref;
+        return \%Data;
 }
 1;
