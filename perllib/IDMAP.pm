@@ -24,8 +24,8 @@ sub get_InChIKey_by_chemicalID
 	my $chemical = shift @_;
 	my $hash_ref = InChIKey_by_chemicalID();	#hash reference (chemical ID => InChIKey)
 	my $ikey = $hash_ref->{$chemical};
-	return if $ikey =~ m/unknown/i;
 	return unless defined($ikey);
+	return if $ikey =~ m/unknown/i;
 	return $ikey;
 }
 sub InChIKey_by_chemicalID
