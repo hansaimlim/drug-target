@@ -7,9 +7,9 @@ use warnings;
 use Data::Dumper;
 #------------------------------------------------TEST AREA------------------------------------
 #my $b = genename_UniProtKB();
-my $a = UniProtKB_genename();
-print $a->{"GGACT"};	#A2LD1
-print $a->{"SYAC"};	#AARS
+#my $a = UniProtKB_genename();
+#print $a->{"GGACT"};	#A2LD1
+#print $a->{"SYAC"};	#AARS
 #------------------------------------------------TEST AREA------------------------------------
 
 sub genename_UniProtKB
