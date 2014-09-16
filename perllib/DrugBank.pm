@@ -17,6 +17,8 @@ use warnings;
 #print $drugbank->get_DrugBank_drugname_by_InChIKey($ikey2);
 #print Dumper($drugbank->get_DrugBank_targets_by_InChIKey($ikey2));
 #----------------------------------------------------------TEST AREA-----------------------------
+my $is_demo_on = 1;	# read demo data (shorter list) if 1
+
 sub new
 {
         my $class = shift;
@@ -43,6 +45,8 @@ sub DrugBankData
 {
 	#target IDs are in genename format, NOT UniProtKB.
 	my $file = "./static/DrugBank/DrugBank_name_target_action.tsv";
+	$file = "./static/DrugBank/DrugBank_name_target_action_demo.tsv" if $is_demo_on;
+	
 	my %DrugBankData;
 	open my $DrugBank, '<', $file or die "Could not open DrugBank file, $file: $!\n";
 	while (my $line = <$DrugBank>){

@@ -19,6 +19,7 @@ use warnings;
 #print Dumper $stitch->get_STITCH_targets_by_InChIKey($ikey2);	#should print OPRD
 #print $stitch->get_STITCH_score($ikey2, $target2);	#900
 #----------------------------------------------------------TEST AREA-----------------------------
+my $is_demo_on = 1;	#read demo data (shorter list) if 1
 sub new
 {
         my $class = shift;
@@ -55,6 +56,7 @@ sub STITCHData
 	#create STITCH object from pre-converted (CIDs to InChIKeys; ENSPs to UniProtKB) with minimum prediction score 900
 	#the targets are in genename format; NOT in UniProtKB
         my $file = "./static/STITCH/9606.protein_chemical.links.v4.0InChIKey_GS_min900.tsv";
+        $file = "./static/STITCH/9606.protein_chemical.links.v4.0InChIKey_GS_min900.tsv" if $is_demo_on;
         my %Data;
         open my $STITCH, '<', $file or die "Could not open DrugBank file, $file: $!\n";
         while (my $line = <$STITCH>){
