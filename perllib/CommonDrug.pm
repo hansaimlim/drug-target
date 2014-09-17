@@ -71,7 +71,7 @@ sub get_common_drugs_by_intersection
 }
 sub print_common_drugs
 {
-        my ($cMap_drugnames_ref, $DrugBank_drugnames_ref, $STITCH_drugnames_ref, $dir);
+        my ($cMap_drugnames_ref, $DrugBank_drugnames_ref, $STITCH_drugnames_ref, $dir) = @_;
 	make_dir($dir);
 	my $cmapfile = $dir . "cMap_commondrugs.txt";
 	my $dbfile = $dir . "DrugBank_commondrugs.txt";
