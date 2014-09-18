@@ -90,6 +90,7 @@ sub cMapdata
 			$is_drugname = 0;
 		} else {
 			my $target = shift @words;
+			chomp($target);
 			my $genename = get_genename_by_UniProtKB($target);
 			if ($genename){		#if the target format is UniProtKB and listed in IDMAP file
 				push @targets, $genename;
