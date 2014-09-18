@@ -14,6 +14,7 @@ use warnings;
 #print $cmap100up->get_cMap_drugname_by_InChIKey($ikey);
 #print Dumper($cmap100up->get_cMap_targets_by_InChIKey($ikey));
 #----------------------------------------------------------TEST AREA-----------------------------
+my $is_demo_on = 1;	#use demo file (shorter) if 1
 sub new
 {
 	my $class = shift;
@@ -49,14 +50,14 @@ sub cMapdata
 	#to create the $self body
 	#this returns a reference to the hash containing cMap information
 	my $range = shift @_;
-	die "Please specify cMap range in new cMap(\"range\")\n"unless $range;
 	my $file = "unknown";
 	#decide which file to open based on the range input
 	$file = "./static/cMap/cMap_drugRL_top50.txt" if $range eq "50up";
 	$file = "./static/cMap/cMap_drugRL_top100.txt" if $range eq "100up";
 	$file = "./static/cMap/cMap_drugRL_bot50.txt" if $range eq "50down";
 	$file = "./static/cMap/cMap_drugRL_bot100.txt" if $range eq "100down";
-	die "cMap ranges can be one of 50up, 100up, 50down, and 100down\n" if $file eq "unknown";
+	print "Using cMap demo file\n" if ($file eq "unknown" or $is_demo_on == 1);
+	$file = "./static/cMap/cMap_drugRL_top50_demo.txt" if $is_demo_on;
 
 	my ($is_drugname, $drug) = (0, 0);
 	my @ikeys;
@@ -85,13 +86,11 @@ sub cMapdata
 			$drug = $words[1];
 			chomp($drug);
 			@ikeys = get_InChIKey_by_name($drug);	#get InChIKeys
-			my $special_ikey = get_InChIKey_by_chemicalID($drug);	#use manually found idmap
-			push @ikeys, $special_ikey if $special_ikey;
 			$is_drugname = 0;
 		} else {
 			my $target = shift @words;
 			chomp($target);
-			my $genename = get_genename_by_UniProtKB($target);
+			my $genename = manual_get_genename_by_UniProtKB($target);
 			if ($genename){		#if the target format is UniProtKB and listed in IDMAP file
 				push @targets, $genename;
 			} else {

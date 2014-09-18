@@ -19,7 +19,7 @@ use warnings;
 #print Dumper $stitch->get_STITCH_targets_by_InChIKey($ikey2);	#should print OPRD
 #print $stitch->get_STITCH_score($ikey2, $target2);	#900
 #----------------------------------------------------------TEST AREA-----------------------------
-my $is_demo_on = 1;	#read demo data (shorter list) if 1
+my $is_demo_on = 0;	#read demo data (shorter list) if 1
 sub new
 {
         my $class = shift;

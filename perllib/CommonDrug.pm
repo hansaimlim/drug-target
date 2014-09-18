@@ -11,12 +11,11 @@ use Data::Dumper;
 use strict;
 use warnings;
 
-my $cmap50up = new cMap("50up");	#the range (50up) does not matter for extraction of common drugs
-my $drugbank = new DrugBank();
-my $stitch = new STITCH();
+#my $drugbank = new DrugBank();
+#my $stitch = new STITCH();
 
-get_common_drugs_by_union($cmap50up, $drugbank, $stitch);
-get_common_drugs_by_intersection($cmap50up, $drugbank, $stitch);
+#get_common_drugs_by_union($cmap50up, $drugbank, $stitch);
+#get_common_drugs_by_intersection($cmap50up, $drugbank, $stitch);
 
 sub get_common_drugs_by_union
 {

@@ -25,7 +25,7 @@ use warnings;
 #}
 #print $num_edges,"\n";
 #----------------------------------------------------------TEST AREA-----------------------------
-my $is_demo_on = 1;	#read demo data (shorter list) if 1
+my $is_demo_on = 0;	#read demo data (shorter list) if 1
 sub new
 {
         my $class = shift;

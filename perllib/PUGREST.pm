@@ -2,6 +2,7 @@
 
 package PUGREST;
 use LWP::Simple;
+use IDMAP;
 use Data::Dumper;
 use DrugTargetBase;
 
@@ -17,6 +18,10 @@ sub get_InChIKey_by_name
 {
 	#input PubChem compound or substance name then output an array of InChIKeys if exist
 	my $name = shift @_;
+	chomp($name);
+	my $manualInChIKey = manual_get_InChIKey_by_chemicalID($name);
+	return $manualInChIKey if ($manualInChIKey);	#stop if found in manual map--save time for accessing PubChem
+
 	my @inchikeys = get_InChIKey_by_compound($name);
 	my @cids = get_CID_by_substance($name);
 	foreach my $cid ( @cids ){
