@@ -7,7 +7,7 @@ use Data::Dumper;
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT = qw(get_genename_by_UniProtKB get_InChIKey_by_chemicalID);
+@EXPORT = qw(manual_get_genename_by_UniProtKB manual_get_InChIKey_by_chemicalID);
 
 #------------------------------------------------TEST AREA------------------------------------
 #my $u = "GGACT_HUMAN";
@@ -16,7 +16,7 @@ require Exporter;
 #print get_genename_by_UniProtKB("nothing"), "\n";	# 0
 #print get_genename_by_UniProtKB("GGACT"), "\n";	#A2LD1
 #------------------------------------------------TEST AREA------------------------------------
-sub get_InChIKey_by_chemicalID
+sub manual_get_InChIKey_by_chemicalID
 {
 	#use manually found IDmap file in idmap static folder
 	#input  : chemical ID (e.g. Chicago_Sky_Blue_6B)
@@ -43,7 +43,7 @@ sub InChIKey_by_chemicalID
 	close $ID;
 	return \%hash;
 }
-sub get_genename_by_UniProtKB
+sub manual_get_genename_by_UniProtKB
 {
 	#input  : UniProtKB (one)
 	#output : genename (one) or 0
