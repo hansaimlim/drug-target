@@ -13,5 +13,10 @@ Connectivity Map - https://www.broadinstitute.org/cmap/
 STITCH - http://stitch.embl.de/
 String - http://string-db.org/
 
+Additional databases and uses are:
+PubChem - methods in PUGREST.pm access PubChem to get the InChIKeys for drugs
+UniProt - Conversions from ENSP IDs to UniProtKB are based on UniProt ID map data
+
+
 
 Note: This repository is for Hansaim Lim's project.
