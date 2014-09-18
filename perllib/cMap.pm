@@ -14,7 +14,7 @@ use warnings;
 #print $cmap100up->get_cMap_drugname_by_InChIKey($ikey);
 #print Dumper($cmap100up->get_cMap_targets_by_InChIKey($ikey));
 #----------------------------------------------------------TEST AREA-----------------------------
-my $is_demo_on = 1;	#use demo file (shorter) if 1
+my $is_demo_on = 0;	#use demo file (shorter) if 1
 sub new
 {
 	my $class = shift;
