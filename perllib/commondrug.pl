@@ -4,7 +4,10 @@ use DrugTargetBase;
 use Data::Dumper;
 use strict;
 use warnings;
-
+#this script output contains redundant drug names (no redundancies for InChIKeys)
+#such redundancies are due to the one to many relationships between drug and InChIKeys,
+#especially ones categorized as substances under PubChem
+#redundancies may be easily removed by linux commands, sort, uniq.
 my $CM_ref = read_InChIKey_drugname("./static/idmap/cMap_InChIKey_drugname.tsv");
 my $DB_ref = read_InChIKey_drugname("./static/idmap/DrugBank_InChIKey_drugname.txt");
 my $ST_ref = read_InChIKey_drugname("./static/STITCH/9606.protein_chemical.links.v4.0InChIKey_GS_min900.tsv");	#format different
