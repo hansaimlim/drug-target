@@ -17,7 +17,7 @@ use warnings;
 #print $drugbank->get_DrugBank_drugname_by_InChIKey($ikey2);
 #print Dumper($drugbank->get_DrugBank_targets_by_InChIKey($ikey2));
 #----------------------------------------------------------TEST AREA-----------------------------
-my $is_demo_on = 0;	# read demo data (shorter list) if 1
+my $is_demo_on = 1;	# read demo data (shorter list) if 1
 
 sub new
 {
@@ -56,7 +56,7 @@ sub DrugBankData
 		while(@words){
 			my $target = shift @words;
 			chomp($target);
-			$target = get_genename_by_UniProtKB($target) if get_genename_by_UniProtKB($target);	#target IDs are converted to genename
+			$target = manual_get_genename_by_UniProtKB($target) if manual_get_genename_by_UniProtKB($target);	#target IDs are converted to genename
 			my $action = shift @words;
 			chomp($action);
 			$target_action{$target} = $action;
