@@ -52,6 +52,7 @@ sub manual_get_genename_by_UniProtKB
 	my $ug_ref = UniProtKB_genename();
 	my $genename = $ug_ref->{$uniprot};
 	if (defined($genename)){
+		chomp($genename);
 		return $genename;
 	} else {
 		return 0;
