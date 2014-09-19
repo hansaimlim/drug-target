@@ -50,10 +50,11 @@ sub reverse_edges
 sub get_String_edges_by_single_node
 {
 	#input : a single node reference (genesymbol)
-	#output: reference to hash of edges
-	my( $self, $noderef ) = @_;
-	my $g1 = $$noderef;
-	my %edges;
+	#output: reference to array of lines (edges)
+	my( $self, $node ) = @_;
+	my $g1 = $node;
+	chomp($g1);
+	my @edges;	#will contain sorted edges as lines (one element contains g1 g2 and distance, but no new line character)
 	my $rev = reverse_edges($self);
 	if ( !( defined($self->{$g1}) or defined($rev->{$g1})) ){
 		return 0;	#not found in the PPI, return 0
@@ -61,18 +62,41 @@ sub get_String_edges_by_single_node
 	if (defined($self->{$g1})){
 		my $ref = $self->{$g1};
 		my %n = %$ref;
+		my @temp;
 		foreach my $g2 (keys %n){
-			$edges{$g1}{$g2} = $n{$g2};
+			chomp($g2);
+			push (@temp, $g1);
+			push (@temp, $g2);
+			my @sorted = sort(@temp);	#sort to remove redundant edges
+			my $first = shift @sorted;
+			chomp($first);
+			my $second = shift @sorted;
+			chomp($second);
+			my $distance = $n{$g2};
+			my $edge = $first . "\t" . $second . "\t" . $distance;
+			push (@edges, $edge);
 		}
 	} 
 	if (defined($rev->{$g1})) {
 		my $ref = $rev->{$g1};
 		my %n = %$ref;
+		my @temp;
 		foreach my $g2 (keys %n){
-			$edges{$g1}{$g2} = $n{$g2};
+			chomp($g2);
+			push (@temp, $g1);
+			push (@temp, $g2);
+			my @sorted = sort(@temp);	#sort to remove redundant edges
+			my $first = shift @sorted;
+			chomp($first);
+			my $second = shift @sorted;
+			chomp($second);
+			my $distance = $n{$g2};
+			my $edge = $first . "\t" . $second . "\t" . $distance;
+			push (@edges, $edge);
 		}
 	}
-        return \%edges;
+	my @uniq_edges = unique(\@edges);
+        return \@uniq_edges;
 }
 sub get_String_edges_by_nodes
 {
