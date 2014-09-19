@@ -18,7 +18,7 @@ use warnings;
 #print Dumper($drugbank->get_DrugBank_targets_by_InChIKey($ikey2));
 #----------------------------------------------------------TEST AREA-----------------------------
 my $is_demo_on = 0;	# read demo data (shorter list) if 1
-my $is_ikey_needed = 0;	# 1 if need PUGREST step
+my $is_ikey_needed = 1;	# 1 if need PUGREST step
 sub new
 {
         my $class = shift;

@@ -15,7 +15,7 @@ use warnings;
 #print Dumper($cmap100up->get_cMap_targets_by_InChIKey($ikey));
 #----------------------------------------------------------TEST AREA-----------------------------
 my $is_demo_on = 0;	#use demo file (shorter) if 1
-my $is_ikey_needed = 0;
+my $is_ikey_needed = 1;
 sub new
 {
 	my $class = shift;
