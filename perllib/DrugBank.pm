@@ -52,6 +52,7 @@ sub DrugBankData
 	while (my $line = <$DrugBank>){
 		my @words = split(/\t/, $line);
 		my $drugname = shift @words;
+		chomp($drugname);
 		my %target_action;
 		while(@words){
 			my $target = shift @words;
