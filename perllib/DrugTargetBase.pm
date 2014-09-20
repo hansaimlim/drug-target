@@ -3,7 +3,32 @@ package DrugTargetBase;
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT = qw(chomp_array unique make_dir dirname_add_slash reverse_simple_hash);
+@EXPORT = qw(chomp_array unique make_dir dirname_add_slash reverse_simple_hash one_column_file_switch rm_special_char_in_drugname);
+
+sub rm_special_char_in_drugname
+{
+	#specialized for cmap drugnames, some of which contain slashes, dashes, parenthesis or signs
+        my $drug = shift @_;
+        $drug =~ s/\///g;       #remove slash
+        $drug =~ s/(\-)(\d|\w)/_$2/;    #a dash to an underscore (but not the stereochemical minus sign)
+        $drug =~ tr/()/__/;     #parenthesis to underscores
+        $drug =~ tr/+-/pm/;     #stereochemical signs to letters
+        $drug =~ tr/\\//;       #remove backslash -- just in case
+        return $drug;
+}
+sub one_column_file_switch
+{
+        #input file must be one element per line
+        my ($file) = shift @_;
+        my %hash;
+        open my $FH, '<', $file or die "Could not open file $file: $!\n";
+        while (my $line = <$FH>){
+                chomp($line);
+                $hash{$line} = 1;
+        }
+        close $FH;
+        return \%hash;
+}
 
 sub chomp_array
 {
