@@ -7,8 +7,7 @@ use Data::Dumper;
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT = qw(manual_get_genename_by_UniProtKB manual_get_InChIKey_by_chemicalID);
-
+@EXPORT = qw(manual_get_genename_by_UniProtKB manual_get_InChIKey_by_chemicalID UniProtKB_genename);
 #------------------------------------------------TEST AREA------------------------------------
 #my $u = "GGACT_HUMAN";
 #my $g = get_genename_by_UniProtKB($u);	#A2LD1
@@ -30,6 +29,7 @@ sub manual_get_InChIKey_by_chemicalID
 }
 sub InChIKey_by_chemicalID
 {
+
 	my $file = "./static/idmap/cMap_manuallyfound_maps.tsv";
 	my %hash;
 	open my $ID, '<', $file or die "Could not open Idmap file $file: $!\n";
