@@ -1,10 +1,31 @@
 #!/usr/bin/perl
 package DrugTargetBase;
 
+use JSON::XS qw(encode_json decode_json);
+use File::Slurp qw(read_file write_file);
 require Exporter;
 @ISA = qw(Exporter);
 @EXPORT = qw(chomp_array unique make_dir dirname_add_slash reverse_simple_hash one_column_file_switch rm_special_char_in_drugname);
 
+sub store_hash
+{
+	#input: hash ref and filename
+	#output: file output
+	my ($hash_ref, $file) = @_;
+	my %hash = %$hash_ref;
+	my $json = encode_json \%hash;
+	write_file($file, { binmode => ':raw' }, $json);
+	return;
+}
+sub load_hash
+{
+	#input: saved file hash
+	#output: ref to loaded hash
+	my $file = shift @_;
+	my $json = read_file($file, { binmode => ':raw' });
+	%hash = %{ decode_json $json };
+	return \%hash;
+}
 sub rm_special_char_in_drugname
 {
 	#specialized for cmap drugnames, some of which contain slashes, dashes, parenthesis or signs
