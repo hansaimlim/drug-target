@@ -5,10 +5,22 @@ use DrugTargetBase;
 use strict;
 use warnings;
 
-my $cmap_obj = new cMap("100up");
-store_hash($cmap_obj, "./static/json/cMap/100up.json");	#store cmap 100 up-regulated gene data in a file
+create_cmap_json("100down");
 
-my $db_obj = new DrugBank();
-store_hash($db_obj, "./static/json/DrugBank/DrugBank.json");	#store DrugBank data in a file
-
+sub create_cmap_json
+{
+	#input : range
+	my $range = shift @_;
+	chomp($range);
+	my $file = "./static/json/cMap/" . $range . ".json";
+	my $cmap = new cMap($range);
+	store_hash($cmap, $file);
+	return;
+}
+sub create_drugbank_json
+{
+	my $db_obj = new DrugBank();
+	store_hash($db_obj, "./static/json/DrugBank/DrugBank.json");
+	return;
+}
 exit;
