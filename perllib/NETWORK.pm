@@ -11,12 +11,13 @@ use strict;
 use warnings;
 my $is_intersect = 1;	#0 if using union; union means drugs appearing in both cMap and (DrugBank 'union' STITCH)
 
-die "Please specify the parent folder for network files\n" unless @ARGV == 1;
+die "Usage: $0 <parent directory for network files> <cMap range; 100up 100down..>\n" unless @ARGV == 2;
 my $outdir = shift @ARGV;
+my $range = shift @ARGV;
 chomp($outdir);
 $outdir = dirname_add_slash($outdir);
 make_dir($outdir);
-my $cMap_obj = cMap->new("100up");
+my $cMap_obj = cMap->new($range);	#matching range file must exist and defined in cMap.pm . check if error occurs
 my $DrugBank_obj = DrugBank->new();
 my $STITCH_obj = STITCH->new();
 my $String_obj = String->new();
