@@ -57,27 +57,26 @@ sub get_network
 		#now need to check if source and dest genes appear in PPI
 		my @sources;	#final sources
 		my @destinations;	#destinations for the given drug
-		my @edges;
 		foreach my $source (@pre_src){
 			chomp($source);
 			my $edge_ref = $string_ref->get_String_edges_by_single_node($source);
 			next unless $edge_ref;	#skip if not found in String (0 is returned)
 			push (@sources, $source);
-			push (@edges, @$edge_ref);
 		}
 		foreach my $dest (@pre_dest){
 			chomp($dest);
 			my $edge_ref = $string_ref->get_String_edges_by_single_node($dest);
 			next unless $edge_ref;	#skip if not found, 0 is returned
 			push (@destinations, $dest);
-			push (@edges, @$edge_ref);
 		}
-		my @pre_nodes;
-		push (@pre_nodes, @sources);
-		push (@pre_nodes, @destinations);
-		my @uniq_pre_nodes = unique(\@pre_nodes);
+
+#-------------------------------node and edges under construction
+		my $node_edge_ref = get_node_and_edge(\@sources, \@destinations, $string_ref);
+		my $node_ref = $node_edge_ref->{"nodes"};
+		my $edge_ref = $node_edge_ref->{"edges"};
+		my @edges = @$edge_ref;
 		my @nodes;
-		foreach my $node (@uniq_pre_nodes){
+		foreach my $node (@$node_ref){
 			chomp($node);
 			my $node_line = $node . "\t1";	#1 for the fold change
 			push (@nodes, $node_line);
@@ -120,6 +119,61 @@ sub get_network
 		close $EDG;
 	}
 	return;
+}
+sub get_node_and_edges
+{
+	#input: source_ref, dest_ref, and String_obj
+	#output: hash ref containing ref to nodes and edges
+	my ($source_ref, $dest_ref, $string_obj) = @_;
+	my @sources = @$source_ref;
+	my @destinations = @$dest_ref;
+	my %node_seen;	#node switch
+	my %edge_seen;	#edge switch
+	my @current_nodes = (@sources, @destinations);
+	@current_nodes = unique(\@current_nodes);
+	my @current_edges;
+	my @new_nodes;
+	my $difference = 1;	#0 if no more new nodes needed
+	while ($difference){
+		foreach my $node (@current_nodes){
+			chomp($node);
+			$node_seen{$node} = 1;	#node switch on
+			my $edge_ref = $string_obj->get_String_edges_by_single_node($node);
+			my @edge = @$edge_ref;
+			if (scalar(@edge) == 0){	#skip if no edge found
+				next;
+			}
+			foreach my $edge (@edge){
+				chomp($edge);
+				push (@current_edges, $edge);
+				$edge_seen{$edge} = 1;	#edge switch on
+			}
+		}
+		foreach my $ed (@current_edges){
+			chomp($ed);
+			my @words = split(/\t/, $ed);
+			my $n1 = shift @words;	#node 1
+			my $n2 = shift @words;	#node 2
+			#my $ds = shift @words;	#distance ---unnecessary
+			if (!$node_seen{$n1}){
+				push (@new_nodes, $n1);
+				$node_seen{$n1} = 1;
+			}
+			if (!$node_seen{$n2}){
+				push (@new_nodes, $n2);
+				$node_seen{$n2} = 1;
+			}
+		}
+		my $num_current_node = scalar(@current_nodes);
+		my $num_new_node = scalar(@new_nodes);
+		$difference = $num_current_node - $num_new_node;	#may be negative. zero if there is nothing new
+	}
+	my @final_edges = unique(\@current_edges);
+	my @final_nodes = unique(\@current_nodes);
+	my %hash;
+	$hash{"edges"} = \@final_edges;
+	$hash{"nodes"} = \@final_nodes;
+	return \%hash;
 }
 sub get_pre_source_dest_by_InChIKey
 {
