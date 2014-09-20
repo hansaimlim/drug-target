@@ -15,16 +15,16 @@ use warnings;
 #print Dumper($cmap100up->get_cMap_targets_by_InChIKey($ikey));
 #----------------------------------------------------------TEST AREA-----------------------------
 my $is_demo_on = 0;	#use demo file (shorter) if 1
-my $is_ikey_needed = 1;
+my $is_PUGREST_needed = 0;
 sub new
 {
 	my $class = shift;
 	my $range = shift;
 	my $self;
-	if ($is_ikey_needed == 1){
+	if ($is_PUGREST_needed == 1){
 		$self = cMapdata($range);	#performs PUGREST InChIKey converting
 	} else {
-		$self = cMapSimple($range);	#does not contain InChIKey. Only Drugname and targets
+		$self = cMapSimple($range);	#does not perform PUGREST; use json to load hash
 	}
 	bless $self, $class;
 	return $self;
@@ -53,56 +53,16 @@ sub get_cMap_targets_by_InChIKey
 }
 sub cMapSimple
 {	
-	#to create the $self body
-	#this returns a reference to the hash containing cMap information
-	#Simple version does not contain an InChIKey
-	#Simple version should be used after extracting common drugs by their names
 	my $range = shift @_;
 	my $file = "unknown";
 	#decide which file to open based on the range input
-	$file = "./static/cMap/cMap_drugRL_top50.txt" if $range eq "50up";
-	$file = "./static/cMap/cMap_drugRL_top100.txt" if $range eq "100up";
-	$file = "./static/cMap/cMap_drugRL_bot50.txt" if $range eq "50down";
-	$file = "./static/cMap/cMap_drugRL_bot100.txt" if $range eq "100down";
-	print "Using cMap demo file\n" if ($file eq "unknown" or $is_demo_on == 1);
-	$file = "./static/cMap/cMap_drugRL_top50_demo.txt" if $is_demo_on;
-
-	my ($is_drugname, $drug) = (0, 0);
-	my @targets;
-	my %cMap;
-	open my $CMAP, '<', $file or die "Could not open cmap file $file: $!\n";
-	while(my $line = <$CMAP>){
-		if ($. == 1){	#1st line, 'x'
-			$is_drugname = 1;
-			next;
-		}
-		if ($line =~ m/^x\s*$/i){
-			$is_drugname = 1;
-			$cMap{$drug} = [@targets];
-			undef $drug;	#should take a new drug name
-			undef @targets;
-			next;
-		}
-		my @words = split(/\t/, $line);
-		if ($is_drugname){
-			$drug = $words[1];
-			chomp($drug);
-			$is_drugname = 0;
-		} else {
-			my $target = shift @words;
-			chomp($target);
-			my $genename = manual_get_genename_by_UniProtKB($target);
-			if ($genename){		#if the target format is UniProtKB and listed in IDMAP file
-				push @targets, $genename;
-			} else {
-				push @targets, $target;
-			}
-		}
-	}
-	close $CMAP;
-	$cMap{$drug} = [@targets];	#for the last drug
-	my $cMapref = \%cMap;
-	return $cMapref;
+	$file = "./static/json/cMap/100down.json" if $range eq "100down";
+	$file = "./static/json/cMap/100up.json" if $range eq "100up";
+	$file = "./static/json/cMap/50down.json" if $range eq "50down";
+	$file = "./static/json/cMap/50up.json" if $range eq "50up";
+	die "cMap range unspecified or file does not exist" if ($file =~ m/unknown/i);
+	my $cMap_ref = load_hash($file);
+	return $cMap_ref;
 }
 sub cMapdata
 {	
