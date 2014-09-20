@@ -13,8 +13,14 @@ my $is_intersect = 1;	#0 if using union; union means drugs appearing in both cMa
 
 die "Please specify the parent folder for network files\n" unless @ARGV == 1;
 my $outdir = shift @ARGV;
+chomp($outdir);
 $outdir = dirname_add_slash($outdir);
-
+make_dir($outdir);
+my $cMap_obj = cMap->new("100up");
+my $DrugBank_obj = DrugBank->new();
+my $STITCH_obj = STITCH->new();
+my $String_obj = String->new();
+get_network($cMap_obj, $DrugBank_obj, $STITCH_obj, $String_obj);
 #-----------------------------------------------------TEST AREA-------------------------------------------------------------------
 #my $cmapobj = cMap->new("50up");
 #my $dbobj = DrugBank->new();
@@ -81,10 +87,14 @@ sub get_network
 		my $current_drug = $cmap_ref->get_cMap_drugname_by_InChIKey($ikey);
 		$current_drug = rm_special_char_in_drugname($current_drug);
 		chomp($current_drug);
-		my $source_file = $outdir . "source_" . $current_drug . ".txt";
-		my $dest_file = $outdir . "dest_" . $current_drug . ".txt";
-		my $node_file = $outdir . "node_" . $current_drug . ".txt";
-		my $edge_file = $outdir . "edge_" . $current_drug . ".txt";
+		my $current_dir = $outdir . $current_drug;
+		$current_dir = dirname_add_slash($current_dir);
+		make_dir($current_dir);	#create directory for individual drug
+
+		my $source_file = $outdir . $current_drug . "/source_" . $current_drug . ".txt";
+		my $dest_file = $outdir . $current_drug . "/dest_" . $current_drug . ".txt";
+		my $node_file = $outdir . $current_drug . "/node_" . $current_drug . ".txt";
+		my $edge_file = $outdir . $current_drug . "/edge_" . $current_drug . ".txt";
 		open my $SRC, '>', $source_file or die "Could not open source file $source_file: $!\n";
 		foreach my $src (@sources){
 			print $SRC $src, "\n";
@@ -108,6 +118,7 @@ sub get_network
 		}
 		close $EDG;
 	}
+	return;
 }
 sub get_pre_source_dest_by_InChIKey
 {
