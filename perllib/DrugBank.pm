@@ -37,6 +37,7 @@ sub get_DrugBank_drugname_by_InChIKey
         #input InChIKey then output the drugname
         my( $self, $ikey ) = @_;
         my $drugname = $self->{$ikey}->{drugname};
+	return 0 unless defined($drugname);
         return $drugname;
 }
 sub get_DrugBank_targets_by_InChIKey
@@ -44,6 +45,7 @@ sub get_DrugBank_targets_by_InChIKey
         #input InChIKey then output a reference to targets in a hash
         my( $self, $ikey ) = @_;
         my $targetref = $self->{$ikey}->{targets};
+	return 0 unless defined($targetref);
         return $targetref;
 }
 sub DrugBankSimple
