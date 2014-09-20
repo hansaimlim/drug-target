@@ -37,6 +37,7 @@ sub get_STITCH_targets_by_InChIKey
 	foreach my $target (keys %$targetsref){
 		push @targets, $target;
 	}
+	return 0 if (scalar(@targets) == 0);	#no targets found for the given InChIKey
         return \@targets;
 }
 sub get_STITCH_score
