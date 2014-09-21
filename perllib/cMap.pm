@@ -15,7 +15,7 @@ use warnings;
 #print Dumper($cmap100up->get_cMap_targets_by_InChIKey($ikey));
 #----------------------------------------------------------TEST AREA-----------------------------
 my $is_demo_on = 0;	#use demo file (shorter) if 1
-my $is_PUGREST_needed = 0;
+my $is_PUGREST_needed = 1;	#0 to turn of PUGREST and speed up reading
 sub new
 {
 	my $class = shift;
@@ -72,9 +72,14 @@ sub cMapdata
 	my $file = "unknown";
 	#decide which file to open based on the range input
 	$file = "./static/cMap/cMap_drugRL_top50.txt" if $range eq "50up";
-	$file = "./static/cMap/cMap_drugRL_top100.txt" if $range eq "100up";
 	$file = "./static/cMap/cMap_drugRL_bot50.txt" if $range eq "50down";
+	$file = "./static/cMap/cMap_drugRL_rand50.txt" if $range eq "50rand";
+	$file = "./static/cMap/cMap_drugRL_top100.txt" if $range eq "100up";
 	$file = "./static/cMap/cMap_drugRL_bot100.txt" if $range eq "100down";
+	$file = "./static/cMap/cMap_drugRL_rand100.txt" if $range eq "100rand";
+	$file = "./static/cMap/cMap_drugRL_top1000.txt" if $range eq "1000up";
+	$file = "./static/cMap/cMap_drugRL_bot1000.txt" if $range eq "1000down";
+	$file = "./static/cMap/cMap_drugRL_rand1000.txt" if $range eq "1000rand";
 	print "Using cMap demo file\n" if ($file eq "unknown" or $is_demo_on == 1);
 	$file = "./static/cMap/cMap_drugRL_top50_demo.txt" if $is_demo_on;
 
