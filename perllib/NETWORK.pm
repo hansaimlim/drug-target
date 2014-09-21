@@ -6,7 +6,6 @@ use DrugBank;
 use STITCH;
 use String;
 use DrugTargetBase;
-use Data::Dumper;
 use strict;
 use warnings;
 my $is_intersect = 1;	#0 if using union; union means drugs appearing in both cMap and (DrugBank 'union' STITCH)
@@ -17,10 +16,14 @@ my $range = shift @ARGV;
 chomp($outdir);
 $outdir = dirname_add_slash($outdir);
 make_dir($outdir);
+
+#need to be modified---------use json to load hash structure instead of primitive objects
 my $cMap_obj = cMap->new($range);	#matching range file must exist and defined in cMap.pm . check if error occurs
 my $DrugBank_obj = DrugBank->new();
-my $STITCH_obj = STITCH->new();
-my $String_obj = String->new();
+#need to be modified---------use json to load hash structure instead of primitive objects
+
+my $STITCH_obj = STITCH->new();	#STITCH obj does not need PUGREST--json NOT needed
+my $String_obj = String->new();	#String obj does not need PUGREST--json NOT needed
 get_network($cMap_obj, $DrugBank_obj, $STITCH_obj, $String_obj);
 #-----------------------------------------------------TEST AREA-------------------------------------------------------------------
 #my $cmapobj = cMap->new("50up");
@@ -69,8 +72,11 @@ sub get_network
 			next unless $edge_ref;	#skip if not found, 0 is returned
 			push (@destinations, $dest);
 		}
+		my $num_source = scalar(@sources);
+		my $num_dest = scalar(@destinations);
 
-#-------------------------------node and edges under construction
+		next if ($num_source == 0 or $num_dest == 0);	#skip if no source of destination
+	
 		my $node_edge_ref = get_node_and_edge(\@sources, \@destinations, $string_ref);
 		my $node_ref = $node_edge_ref->{"nodes"};
 		my $edge_ref = $node_edge_ref->{"edges"};
