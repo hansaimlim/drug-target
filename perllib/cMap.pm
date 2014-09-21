@@ -33,7 +33,7 @@ sub get_cMap_InChIKey
 {
 	#get all the available InChIKeys in cMap DrugRL data
 	#returns a reference array
-	my( $self ) = @_;
+	my( $self ) = shift @_;
 	my @ikeys = keys( %$self );
 	return \@ikeys;
 }
@@ -77,6 +77,9 @@ sub cMapdata
 	$file = "./static/cMap/cMap_drugRL_top100.txt" if $range eq "100up";
 	$file = "./static/cMap/cMap_drugRL_bot100.txt" if $range eq "100down";
 	$file = "./static/cMap/cMap_drugRL_rand100.txt" if $range eq "100rand";
+	$file = "./static/cMap/cMap_drugRL_top200.txt" if $range eq "200up";
+	$file = "./static/cMap/cMap_drugRL_bot200.txt" if $range eq "200down";
+	$file = "./static/cMap/cMap_drugRL_rand200.txt" if $range eq "200rand";
 	$file = "./static/cMap/cMap_drugRL_top1000.txt" if $range eq "1000up";
 	$file = "./static/cMap/cMap_drugRL_bot1000.txt" if $range eq "1000down";
 	$file = "./static/cMap/cMap_drugRL_rand1000.txt" if $range eq "1000rand";
