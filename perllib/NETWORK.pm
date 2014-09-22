@@ -14,16 +14,17 @@ die "Usage: $0 <parent directory for network files> <cMap range; 100up 100down..
 my $outdir = shift @ARGV;
 my $range = shift @ARGV;
 chomp($outdir);
+chomp($range);
 $outdir = dirname_add_slash($outdir);
 make_dir($outdir);
 
 #need to be modified---------use json to load hash structure instead of primitive objects
-my $cMap_obj = cMap->new($range);	#matching range file must exist and defined in cMap.pm . check if error occurs
-my $DrugBank_obj = DrugBank->new();
+my $cMap_obj = new cMap($range, "off");	#matching range file must exist and defined in cMap.pm . check if error occurs
+my $DrugBank_obj = new DrugBank("off");	#off means PUGREST off
 #need to be modified---------use json to load hash structure instead of primitive objects
 
-my $STITCH_obj = STITCH->new();	#STITCH obj does not need PUGREST--json NOT needed
-my $String_obj = String->new();	#String obj does not need PUGREST--json NOT needed
+my $STITCH_obj = new STITCH();	#STITCH obj does not need PUGREST--json NOT needed
+my $String_obj = new String();	#String obj does not need PUGREST--json NOT needed
 get_network($cMap_obj, $DrugBank_obj, $STITCH_obj, $String_obj);
 #-----------------------------------------------------TEST AREA-------------------------------------------------------------------
 #my $cmapobj = cMap->new("50up");
@@ -35,19 +36,19 @@ get_network($cMap_obj, $DrugBank_obj, $STITCH_obj, $String_obj);
 sub get_network
 {
 	my ($cmap_ref, $drugbank_ref, $stitch_ref, $string_ref) = @_;	#the references to databases
-	my @cMap_InChIKeys = $cmap_ref->get_cMap_InChIKey();
+	my @cMap_InChIKeys = keys (%$cmap_ref);
 	my $type = "union";
 	$type = "intersect" if $is_intersect == 1;
 	my $path_commondrug = "./static/common_drugs/";
 	my $cmap_drug = $path_commondrug . $type . "/cMap_drugnames.txt";
-	my $drugbank_drug = $path_commondrug . $type . "./DrugBank_drugnames.txt";
-	my $stitch_drug = $path_commondrug . $type . "./STITCH_InChIKeys.txt";
+	my $drugbank_drug = $path_commondrug . $type . "/DrugBank_drugnames.txt";
+	my $stitch_drug = $path_commondrug . $type . "/STITCH_InChIKeys.txt";
 
 	my $drugbank_exist = one_column_file_switch($drugbank_drug);
 	my $stitch_exist = one_column_file_switch($stitch_drug);
 	foreach my $ikey (@cMap_InChIKeys){	#at this point it exists in cmap data; no need to check if it is in cmap
 		my $db_drug = $drugbank_ref->get_DrugBank_drugname_by_InChIKey($ikey);	#may or may not exist
-		next if ($db_drug == 0 && !$stitch_exist->{$ikey});	#skip if not found in either DrugBank or STITCH
+		next if (!$db_drug && !$stitch_exist->{$ikey});	#skip if not found in either DrugBank or STITCH
 	
 		#found at least in one database (DrugBank, STITCH)
 		my $pre_network = get_pre_source_dest_by_InChIKey($cmap_ref, $drugbank_ref, $stitch_ref, $ikey);
@@ -189,7 +190,7 @@ sub get_pre_source_dest_by_InChIKey
 	#
 	#	my $pre_dest_ref = $prenetwork->{"pre_dest"};
 	#	my @pre_dest = @$pre_dest_ref;	#destination genes for given InChIKey (drug)
-	my ($cmap_ref, $drugbank_ref, $stitch_ref, $ikey) = shift @_;
+	my ($cmap_ref, $drugbank_ref, $stitch_ref, $ikey) = @_;
 	
 	my $dest_ref = $cmap_ref->get_cMap_targets_by_InChIKey($ikey);	#ref to an array of targets in cmap
 	my @pre_dest = @$dest_ref;	#targets in cmap
