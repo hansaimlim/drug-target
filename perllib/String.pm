@@ -28,7 +28,7 @@ use warnings;
 my $is_demo_on = 0;	#read demo data (shorter list) if 1
 sub new
 {
-        my $class = shift;
+        my $class = shift @_;
         my $self = StringData();
         bless $self, $class;
         return $self;
@@ -37,7 +37,7 @@ sub reverse_edges
 {
 	#take String PPI hash reference and reverse the order
 	#output: reference to hash of reverse edges
-	my( $self ) = @_;
+	my( $self ) = shift @_;
 	my %ppi = %$self;
 	my %rev;
 	foreach my $g1 (keys %ppi){
