@@ -15,11 +15,11 @@ use warnings;
 #print Dumper($cmap100up->get_cMap_targets_by_InChIKey($ikey));
 #----------------------------------------------------------TEST AREA-----------------------------
 my $is_demo_on = 0;	#use demo file (shorter) if 1
-my $is_PUGREST_needed = 1;	#0 to turn of PUGREST and speed up reading
 sub new
 {
-	my $class = shift;
-	my $range = shift;
+	my $class = shift @_;
+	my $range = shift @_;
+	my $is_PUGREST_needed = shift @_;
 	my $self;
 	if ($is_PUGREST_needed == 1){
 		$self = cMapdata($range);	#performs PUGREST InChIKey converting

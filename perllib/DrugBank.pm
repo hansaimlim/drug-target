@@ -18,13 +18,13 @@ use warnings;
 #print Dumper($drugbank->get_DrugBank_targets_by_InChIKey($ikey2));
 #----------------------------------------------------------TEST AREA-----------------------------
 my $is_demo_on = 0;	# read demo data (shorter list) if 1
-my $is_PUGREST_needed = 0;	# 1 if need PUGREST step
 sub new
 {
-        my $class = shift;
-        my $range = shift;
+        my $class = shift @_;
+        my $range = shift @_;
+	my $is_PUGREST_needed = shift @_;	#1 or yes or on for PUGREST step -- slower due to access through PubChem
 	my $self;
-	if ($is_PUGREST_needed == 1){
+	if ($is_PUGREST_needed == 1 or $is_PUGREST_needed =~ m/(yes)|(on)/i){
         	$self = DrugBankData();	#does perform PUGREST; will contain InChIKeys
 	} else {
 		$self = DrugBankSimple();	#does not perform PUGREST; will NOT have InChIKeys
