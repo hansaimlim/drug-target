@@ -5,6 +5,8 @@ use DrugTargetBase;
 use PUGREST;
 use IDMAP;
 use Data::Dumper;
+$Data::Dumper::Sortkeys = 1;
+$Data::Dumper::Indent = 1;
 use strict;
 use warnings;
 #----------------------------------------------------------TEST AREA-----------------------------
@@ -33,20 +35,6 @@ sub new
         bless $self, $class;
         return $self;
 }
-sub reverse_edges
-{
-	#take String PPI hash reference and reverse the order
-	#output: reference to hash of reverse edges
-	my( $self ) = shift @_;
-	my %ppi = %$self;
-	my %rev;
-	foreach my $g1 (keys %ppi){
-		foreach my $g2 (keys $ppi{$g1}){
-			$rev{$g2}{$g1} = $ppi{$g1}{$g2};
-		}
-	}
-	return \%rev;
-}
 sub get_String_edges_by_single_node
 {
 	#input : a single node reference (genesymbol)
@@ -55,8 +43,7 @@ sub get_String_edges_by_single_node
 	my $g1 = $node;
 	chomp($g1);
 	my @edges;	#will contain sorted edges as lines (one element contains g1 g2 and distance, but no new line character)
-	my $rev = reverse_edges($self);
-	if ( !( defined($self->{$g1}) or defined($rev->{$g1})) ){
+	if ( !( defined($self->{$g1})) ){
 		return 0;	#not found in the PPI, return 0
 	}
 	if (defined($self->{$g1})){
@@ -67,34 +54,18 @@ sub get_String_edges_by_single_node
 			chomp($g2);
 			push (@temp, $g1);
 			push (@temp, $g2);
-			my @sorted = sort(@temp);	#sort to remove redundant edges
-			my $first = shift @sorted;
+			my @sorted_nodes = sort(@temp);	#sort to remove redundant edges
+			my $first = shift @sorted_nodes;
 			chomp($first);
-			my $second = shift @sorted;
+			my $second = shift @sorted_nodes;
 			chomp($second);
 			my $distance = $n{$g2};
 			my $edge = $first . "\t" . $second . "\t" . $distance;
 			push (@edges, $edge);
+			undef @sorted_nodes;
+			undef @temp;
 		}
 	} 
-	if (defined($rev->{$g1})) {
-		my $ref = $rev->{$g1};
-		my %n = %$ref;
-		my @temp;
-		foreach my $g2 (keys %n){
-			chomp($g2);
-			push (@temp, $g1);
-			push (@temp, $g2);
-			my @sorted = sort(@temp);	#sort to remove redundant edges
-			my $first = shift @sorted;
-			chomp($first);
-			my $second = shift @sorted;
-			chomp($second);
-			my $distance = $n{$g2};
-			my $edge = $first . "\t" . $second . "\t" . $distance;
-			push (@edges, $edge);
-		}
-	}
 	my @uniq_edges = unique(\@edges);
         return \@uniq_edges;
 }
@@ -107,7 +78,6 @@ sub get_String_edges_by_nodes
         my( $self, $noderef ) = @_;
         my @nodes = @$noderef;	#nodes
 	my %edges;
-	my $rev = reverse_edges($self);	#reverse PPI, a hash reference
 	foreach my $node (@nodes){
 		my $g1 = $node;
 		if (defined($self->{$node})){
@@ -117,13 +87,6 @@ sub get_String_edges_by_nodes
 				$edges{$g1}{$g2} = $n{$g2};
 			}
 		} 
-		if (defined($rev->{$node})) {
-			my $ref = $rev->{$node};
-			my %n = %$ref;
-			foreach my $g2 (keys %n){
-				$edges{$g1}{$g2} = $n{$g2};
-			}
-		}
 	}
         return \%edges;
 }
@@ -157,6 +120,7 @@ sub StringData
                 my $distance = shift @words;
                 chomp($distance);
                 $Data{$gene1}{$gene2} = $distance;
+		$Data{$gene2}{$gene1} = $distance;	#make duplicated data for convenience; Assuming that the network is UNdirected
         }
         close $String;
         return \%Data;
