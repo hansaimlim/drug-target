@@ -102,6 +102,83 @@ sub get_String_distance
                 return 0;
         }
 }
+sub Randomize_String
+{
+	#randomize PPI network
+	#follows the algorithm introduced in Random Network Plugin for Cytoscape - reference below:
+	#https://sites.google.com/site/randomnetworkplugin/Home/randomization-of-existing-networks
+	my( $self, $n ) = @_;	#will shuffle n times
+	my %ppi = %$self;	#do not use reference below; to preserve original ppi
+        my $file = "./static/String/9606.protein.links.v9.1-GN-dist.txt";
+        $file = "./static/String/9606.protein.links.v9.1-GN-dist.txt" if $is_demo_on;
+	my @edges;
+	my @distances;	#collection of distances; duplicate values are allowed
+	my %edge_count;
+	open my $String, '<', $file or die "Could not open PPI file, $file: $!\n";
+	while (my $line = <$String>){
+		next if $. == 1;	#skip first line
+		chomp($line);
+		push (@edges, $line);
+		$edge_count{$line}++;
+
+		my @words = split(/\t/, $line);
+		my $dist = $words[2];	#the third elements are distances (with a possible new line)
+		chomp($dist);
+		push (@distances, $dist);
+	}
+	close $String;
+	for (my $i=1; $i <= $n; $i++){
+		@edges = fisher_yates_shuffle(\@edges);
+		my @distances_shuffled = fisher_yates_shuffle(\@distances);
+		my ($edge1, $edge2);
+		my ($new_edge1, $new_edge2, $dist1, $dist2);
+		my ($u, $v, $s, $t);	#nodes
+		while(1){
+			my $first_edge = shift @edges;
+			my @words = split(/\t/, $first_edge);
+			my $u_temp = shift @words;
+			my $v_temp = shift @words;
+			chomp($u_temp);
+			chomp($v_temp);
+			if ($u_temp ne $v_temp){
+				$edge1 = $first_edge;
+				$u = $u_temp;
+				$v = $v_temp;
+				last;
+			}
+		}
+		while(1){
+			my $second_edge = shift @edges;
+			my @words = split(/\t/, $second_edge);
+			my $s_temp = shift @words;
+			my $t_temp = shift @words;
+			chomp($s_temp);
+			chomp($t_temp);
+			if ($s_temp ne $t_temp){
+				if ( ($v ne $s_temp) && ($u ne $t_temp) && ($u ne $s_temp) && ($v ne $t_temp) ){
+					next if (($ppi{$u}{$t_temp} or $ppi{$t_temp}{$u} or $ppi{$v}{$s_temp} or $ppi{$s_temp}{$v}));	#should not exist in current ppi
+					$edge2 = $second_edge;
+					$s = $s_temp;
+					$t = $t_temp;
+					last;
+				}
+			}
+		}
+		$dist1 = shift @distances_shuffled;
+		$dist2 = shift @distances_shuffled;
+		chomp($dist1);
+		chomp($dist2);
+		$ppi{$u}{$t} = $dist1;	
+		$ppi{$s}{$v} = $dist2;
+		$new_edge1 = "$u\t$t\t$dist1";
+		$new_edge2 = "$s\t$v\t$dist2";
+		push (@edges, $new_edge1);
+		push (@edges, $new_edge2);
+		undef($ppi{$u}{$v});
+		undef($ppi{$s}{$t});
+	}
+	return \%ppi;	#this ppi is separate from the original string data; it is shuffled, but may contain some identical edges.
+}
 sub StringData
 {
         #create String object from pre-converted (Gene Gene Distance)
@@ -111,7 +188,7 @@ sub StringData
         my $file = "./static/String/9606.protein.links.v9.1-GN-dist.txt";
         $file = "./static/String/9606.protein.links.v9.1-GN-dist.txt" if $is_demo_on;
         my %Data;
-        open my $String, '<', $file or die "Could not open DrugBank file, $file: $!\n";
+        open my $String, '<', $file or die "Could not open PPI file, $file: $!\n";
         while (my $line = <$String>){
 		next if $. == 1;	#skip first line
                 my @words = split(/\t/, $line);
