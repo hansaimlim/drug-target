@@ -122,6 +122,10 @@ sub get_network
 			print $EDG $edge, "\n";
 		}
 		close $EDG;
+		undef @sources;
+		undef @destinations;
+		undef @nodes;
+		undef @edges;
 	}
 	return;
 }
