@@ -19,20 +19,15 @@ $outdir = dirname_add_slash($outdir);
 make_dir($outdir);
 
 #need to be modified---------use json to load hash structure instead of primitive objects
-my $cMap_obj = new cMap($range, "off");	#matching range file must exist and defined in cMap.pm . check if error occurs
-my $DrugBank_obj = new DrugBank("off");	#off means PUGREST off
+my $cMap_obj = cMap->new($range, "off");	#matching range file must exist and defined in cMap.pm . check if error occurs
+my $DrugBank_obj = DrugBank->new("off");	#off means PUGREST off
 #need to be modified---------use json to load hash structure instead of primitive objects
 
 my $STITCH_obj = new STITCH();	#STITCH obj does not need PUGREST--json NOT needed
 my $String_obj = new String();	#String obj does not need PUGREST--json NOT needed
 get_network($cMap_obj, $DrugBank_obj, $STITCH_obj, $String_obj);
-#-----------------------------------------------------TEST AREA-------------------------------------------------------------------
-#my $cmapobj = cMap->new("50up");
-#my $dbobj = DrugBank->new();
-#my $STobj = STITCH->new();
-#my $presrcref = get_pre_source($cmapobj, $dbobj, $STobj);
-#print Dumper($presrcref);
-#-----------------------------------------------------TEST AREA-------------------------------------------------------------------
+
+
 sub get_network
 {
 	my ($cmap_ref, $drugbank_ref, $stitch_ref, $string_ref) = @_;	#the references to databases
@@ -76,9 +71,12 @@ sub get_network
 		my $num_source = scalar(@sources);
 		my $num_dest = scalar(@destinations);
 
-		next if ($num_source == 0 or $num_dest == 0);	#skip if no source of destination
+		if ($num_source == 0 or $num_dest == 0){	#skip if no source of destination
+			print "No sources or destinations found for $db_drug\n";
+			next;
+		}
 	
-		my $node_edge_ref = get_node_and_edge(\@sources, \@destinations, $string_ref);
+		my $node_edge_ref = get_node_and_edges(\@sources, \@destinations, $string_ref);
 		my $node_ref = $node_edge_ref->{"nodes"};
 		my $edge_ref = $node_edge_ref->{"edges"};
 		my @edges = @$edge_ref;
@@ -140,9 +138,39 @@ sub get_node_and_edges
 	@current_nodes = unique(\@current_nodes);
 	my @current_edges;
 	my @new_nodes;
-	my $difference = 1;	#0 if no more new nodes needed
-	while ($difference){
-		foreach my $node (@current_nodes){
+	my @new_edges;
+	foreach my $node (@current_nodes){
+		chomp($node);
+		$node_seen{$node} = 1;	#node switch on
+		my $edge_ref = $string_obj->get_String_edges_by_single_node($node);
+		my @edge = @$edge_ref;
+		if (scalar(@edge) == 0){	#skip if no edge found
+			next;
+		}
+		foreach my $edge (@edge){
+			chomp($edge);
+			push (@current_edges, $edge);
+			$edge_seen{$edge} = 1;	#edge switch on
+		}
+	}
+	foreach my $ed (@current_edges){
+		chomp($ed);
+		my @words = split(/\t/, $ed);
+		my $n1 = shift @words;	#node 1
+		my $n2 = shift @words;	#node 2
+		#my $ds = shift @words;	#distance ---unnecessary
+		if (!$node_seen{$n1}){
+			push (@new_nodes, $n1);
+			$node_seen{$n1} = 1;
+		}
+		if (!$node_seen{$n2}){
+			push (@new_nodes, $n2);
+			$node_seen{$n2} = 1;
+		}
+	}
+	my $num_new_node = scalar(@new_nodes);	#0 if no more new nodes needed
+	while ($num_new_node){
+		foreach my $node (@new_nodes){
 			chomp($node);
 			$node_seen{$node} = 1;	#node switch on
 			my $edge_ref = $string_obj->get_String_edges_by_single_node($node);
@@ -152,16 +180,18 @@ sub get_node_and_edges
 			}
 			foreach my $edge (@edge){
 				chomp($edge);
-				push (@current_edges, $edge);
+				push (@new_edges, $edge);
 				$edge_seen{$edge} = 1;	#edge switch on
 			}
 		}
-		foreach my $ed (@current_edges){
+		push (@current_nodes, @new_nodes);
+		undef @new_nodes;
+		foreach my $ed (@new_edges){
 			chomp($ed);
 			my @words = split(/\t/, $ed);
 			my $n1 = shift @words;	#node 1
 			my $n2 = shift @words;	#node 2
-			#my $ds = shift @words;	#distance ---unnecessary
+			#my $ds = shift @words;	#distance unnecessary
 			if (!$node_seen{$n1}){
 				push (@new_nodes, $n1);
 				$node_seen{$n1} = 1;
@@ -171,9 +201,9 @@ sub get_node_and_edges
 				$node_seen{$n2} = 1;
 			}
 		}
-		my $num_current_node = scalar(@current_nodes);
-		my $num_new_node = scalar(@new_nodes);
-		$difference = $num_current_node - $num_new_node;	#may be negative. zero if there is nothing new
+		push (@current_edges, @new_edges);
+		undef @new_edges;
+		$num_new_node = scalar(@new_nodes);
 	}
 	my @final_edges = unique(\@current_edges);
 	my @final_nodes = unique(\@current_nodes);
@@ -191,19 +221,24 @@ sub get_pre_source_dest_by_InChIKey
 	#	my $pre_dest_ref = $prenetwork->{"pre_dest"};
 	#	my @pre_dest = @$pre_dest_ref;	#destination genes for given InChIKey (drug)
 	my ($cmap_ref, $drugbank_ref, $stitch_ref, $ikey) = @_;
-	
+
 	my $dest_ref = $cmap_ref->get_cMap_targets_by_InChIKey($ikey);	#ref to an array of targets in cmap
 	my @pre_dest = @$dest_ref;	#targets in cmap
 	my @pre_sources;
 
 	#may produce warnings or errors here when: 1)no targets for the given drug, 2)only one database contains the drug--in case of union
 	my $drugbank_targets_ref = $drugbank_ref->get_DrugBank_targets_by_InChIKey($ikey);	#hash ref
-	my $stitch_targets_ref = get_STITCH_targets_by_InChIKey($ikey);	#array ref
-	foreach my $drug (keys %$drugbank_targets_ref){
-		chomp($drug);
-		push (@pre_sources, $drug);
+	my $stitch_targets_ref = $stitch_ref->get_STITCH_targets_by_InChIKey($ikey);	#array ref
+	return 0 if ($drugbank_targets_ref == 0 && $stitch_targets_ref == 0);	#if no targets found for the given inchikey
+	if ($drugbank_targets_ref){	#skip if no drugbank targets found
+		foreach my $drug (keys %$drugbank_targets_ref){
+			chomp($drug);
+			push (@pre_sources, $drug);
+		}
 	}
-	push (@pre_sources, @$stitch_targets_ref);	#join array
+	push (@pre_sources, @$stitch_targets_ref) if $stitch_targets_ref;	#push stitch targets if found
+	return 0 if scalar(@pre_sources) == 0;	#skip if no targets found
+
 	my @temp = @pre_sources;
 	@pre_sources = unique(\@temp);	#remove redundancies
 	my %hash;
