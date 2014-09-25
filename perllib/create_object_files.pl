@@ -1,6 +1,7 @@
 #!/usr/bin/perl
-use DrugBank;
-use cMap;
+#use DrugBank;
+#use cMap;
+use String;
 use DrugTargetBase;
 use strict;
 use warnings;
