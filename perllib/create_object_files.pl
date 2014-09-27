@@ -46,6 +46,7 @@ sub create_random_ppi_json
 	my $n = shift @_;
 	my $string_obj = new String();
 	my $string_shuffle_n = $string_obj->Randomize_String($n);
+	make_dir("./static/json/String/");
 	my $file = "./static/json/String/Random_String" . $n . ".json";
 	store_hash($string_shuffle_n, $file);
 	return;
