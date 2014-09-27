@@ -20,7 +20,7 @@ sub new
 	my $class = shift @_;
 	my $range = shift @_;
 	my $is_PUGREST_needed = shift @_;
-	my $self;
+	my $self = {};
 	if ($is_PUGREST_needed == 1){
 		$self = cMapdata($range);	#performs PUGREST InChIKey converting
 	} else {
@@ -56,10 +56,17 @@ sub cMapSimple
 	my $range = shift @_;
 	my $file = "unknown";
 	#decide which file to open based on the range input
-	$file = "./static/json/cMap/100down.json" if $range eq "100down";
-	$file = "./static/json/cMap/100up.json" if $range eq "100up";
 	$file = "./static/json/cMap/50down.json" if $range eq "50down";
 	$file = "./static/json/cMap/50up.json" if $range eq "50up";
+	$file = "./static/json/cMap/100down.json" if $range eq "100down";
+	$file = "./static/json/cMap/100up.json" if $range eq "100up";
+	$file = "./static/json/cMap/100rand.json" if $range eq "100rand";
+	$file = "./static/json/cMap/200up.json" if $range eq "200up";
+	$file = "./static/json/cMap/200down.json" if $range eq "200down";
+	$file = "./static/json/cMap/200rand.json" if $range eq "200rand";
+	$file = "./static/json/cMap/1000down.json" if $range eq "1000down";
+	$file = "./static/json/cMap/1000up.json" if $range eq "1000up";
+	$file = "./static/json/cMap/1000rand.json" if $range eq "1000rand";
 	die "cMap range unspecified or file does not exist" if ($file =~ m/unknown/i);
 	my $cMap_ref = load_hash($file);
 	return $cMap_ref;
@@ -131,8 +138,7 @@ sub cMapdata
 		$cMap{$ikey}{drugname} = $drug;
 		$cMap{$ikey}{targets} = [@uniq_targets]; 
 	}
-	my $cMapref = \%cMap;
-	return $cMapref;
+	return \%cMap;
 }
 
 1;

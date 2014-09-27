@@ -5,8 +5,20 @@ use JSON::XS qw(encode_json decode_json);
 use File::Slurp qw(read_file write_file);
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT = qw(store_hash load_hash chomp_array unique make_dir dirname_add_slash reverse_simple_hash one_column_file_switch rm_special_char_in_drugname);
+@EXPORT = qw(fisher_yates_shuffle store_hash load_hash chomp_array unique make_dir dirname_add_slash reverse_simple_hash one_column_file_switch rm_special_char_in_drugname);
 
+sub fisher_yates_shuffle
+{
+	my $array = shift;
+	my $i = @$array;
+	my @shuffled;
+	while ( --$i )
+	{
+		my $j = int rand( $i+1 );
+		@shuffled[$i,$j] = @$array[$j,$i];
+	}
+	return @shuffled;
+}
 sub store_hash
 {
 	#input: hash ref and filename

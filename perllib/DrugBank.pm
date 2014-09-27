@@ -22,7 +22,7 @@ sub new
 {
         my $class = shift @_;
 	my $is_PUGREST_needed = shift @_;	#1 or yes or on for PUGREST step -- slower due to access through PubChem
-	my $self;
+	my $self = {};
 	if ($is_PUGREST_needed == 1 or $is_PUGREST_needed =~ m/(yes)|(on)/i){
         	$self = DrugBankData();	#does perform PUGREST; will contain InChIKeys
 	} else {
