@@ -110,15 +110,15 @@ sub Randomize_String
 	my( $self, $n ) = @_;	#will shuffle n times
 	my %ppi = %$self;	#do not use reference below; to preserve original ppi
         my $file = "./static/String/9606.protein.links.v9.1-GN-dist.txt";
-        $file = "./static/String/9606.protein.links.v9.1-GN-dist.txt" if $is_demo_on;
-	my @edges;
+        $file = "./static/String/9606.protein.links.v9.1-GN-dist_demo.txt" if $is_demo_on;
+	my @edges_original;
 	my @distances;	#collection of distances; duplicate values are allowed
 	my %edge_count;
 	open my $String, '<', $file or die "Could not open PPI file, $file: $!\n";
 	while (my $line = <$String>){
 		next if $. == 1;	#skip first line
 		chomp($line);
-		push (@edges, $line);
+		push (@edges_original, $line);
 		$edge_count{$line}++;
 
 		my @words = split(/\t/, $line);
@@ -127,42 +127,47 @@ sub Randomize_String
 		push (@distances, $dist);
 	}
 	close $String;
-	for (my $i=1; $i <= $n; $i++){
-		@edges = fisher_yates_shuffle(\@edges);
+	SHUFFLE: for (my $i=1; $i <= $n; $i++){
+		my @edges = fisher_yates_shuffle(\@edges_original);
 		my @distances_shuffled = fisher_yates_shuffle(\@distances);
 		my ($edge1, $edge2);
 		my ($new_edge1, $new_edge2, $dist1, $dist2);
 		my ($u, $v, $s, $t);	#nodes
-		while(1){
+		EDGE: while(@edges){
 			my $first_edge = shift @edges;
-			my @words = split(/\t/, $first_edge);
-			my $u_temp = shift @words;
-			my $v_temp = shift @words;
+			my @words1 = split(/\t/, $first_edge);
+			my $u_temp = shift @words1;
+			my $v_temp = shift @words1;
 			chomp($u_temp);
 			chomp($v_temp);
 			if ($u_temp ne $v_temp){
 				$edge1 = $first_edge;
 				$u = $u_temp;
 				$v = $v_temp;
-				last;
+			} else {
+				next EDGE;
 			}
-		}
-		while(1){
-			my $second_edge = shift @edges;
-			my @words = split(/\t/, $second_edge);
-			my $s_temp = shift @words;
-			my $t_temp = shift @words;
-			chomp($s_temp);
-			chomp($t_temp);
-			if ($s_temp ne $t_temp){
-				if ( ($v ne $s_temp) && ($u ne $t_temp) && ($u ne $s_temp) && ($v ne $t_temp) ){
-					next if (($ppi{$u}{$t_temp} or $ppi{$t_temp}{$u} or $ppi{$v}{$s_temp} or $ppi{$s_temp}{$v}));	#should not exist in current ppi
-					$edge2 = $second_edge;
-					$s = $s_temp;
-					$t = $t_temp;
-					last;
+			EDGE2: foreach my $e (@edges){
+				my $second_edge = shift @edges;
+				my @words2 = split(/\t/, $second_edge);
+				my $s_temp = shift @words2;
+				my $t_temp = shift @words2;
+				chomp($s_temp);
+				chomp($t_temp);
+				if ($s_temp ne $t_temp){
+					if ( ($v ne $s_temp) && ($u ne $t_temp) && ($u ne $s_temp) && ($v ne $t_temp) ){
+						next if (($ppi{$u}{$t_temp} or $ppi{$t_temp}{$u} or $ppi{$v}{$s_temp} or $ppi{$s_temp}{$v}));	#should not exist in current ppi
+						$edge2 = $second_edge;
+						$s = $s_temp;
+						$t = $t_temp;
+						last EDGE2;
+					}
 				}
 			}
+		}
+		unless ($u && $v && $s && $t){	#failed to get shuffled edge; perform $i th iteration again
+			$i--;
+			next SHUFFLE;
 		}
 		$dist1 = shift @distances_shuffled;
 		$dist2 = shift @distances_shuffled;
@@ -174,7 +179,7 @@ sub Randomize_String
 		$new_edge2 = "$s\t$v\t$dist2";
 		push (@edges, $new_edge1);
 		push (@edges, $new_edge2);
-		undef($ppi{$u}{$v});
+		undef($ppi{$u}{$v});	#remove original edge
 		undef($ppi{$s}{$t});
 	}
 	return \%ppi;	#this ppi is separate from the original string data; it is shuffled, but may contain some identical edges.
