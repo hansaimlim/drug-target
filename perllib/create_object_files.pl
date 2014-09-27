@@ -1,6 +1,7 @@
 #!/usr/bin/perl
-use DrugBank;
-use cMap;
+#use DrugBank;
+#use cMap;
+use String;
 use DrugTargetBase;
 use strict;
 use warnings;
@@ -15,15 +16,15 @@ use warnings;
 #create_cmap_json("1000up");	#done
 #create_cmap_json("1000down");	#done
 #create_cmap_json("1000rand");	#done
+create_random_ppi_json(10);	#low shuffle numbers are for controlled experiments
+create_random_ppi_json(20);
+create_random_ppi_json(30);
 create_random_ppi_json(100000);
 create_random_ppi_json(1000000);
 create_random_ppi_json(2000000);
 create_random_ppi_json(3000000);
 create_random_ppi_json(4000000);
 create_random_ppi_json(5000000);
-create_random_ppi_json(10);	#low shuffle numbers are for controlled experiments
-create_random_ppi_json(20);
-create_random_ppi_json(30);
 sub create_cmap_json
 {
 	#input : range
