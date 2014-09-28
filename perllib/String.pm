@@ -148,7 +148,7 @@ sub Randomize_String
 				next EDGE;
 			}
 			EDGE2: foreach my $e (@edges){
-				my $second_edge = shift @edges;
+				my $second_edge = $e;
 				my @words2 = split(/\t/, $second_edge);
 				my $s_temp = shift @words2;
 				my $t_temp = shift @words2;
