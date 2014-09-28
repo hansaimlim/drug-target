@@ -169,8 +169,12 @@ sub Randomize_String
 			$i--;
 			next SHUFFLE;
 		}
-		$dist1 = shift @distances_shuffled;
-		$dist2 = shift @distances_shuffled;
+		while(!$dist1){
+			$dist1 = shift @distances_shuffled;
+		}
+		while(!$dist2){
+			$dist2 = shift @distances_shuffled;
+		}
 		chomp($dist1);
 		chomp($dist2);
 		$ppi{$u}{$t} = $dist1;	
