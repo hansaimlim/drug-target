@@ -166,7 +166,12 @@ sub Randomize_String
 					}
 				}
 			}
-			if ($u && $v && $s && $t){
+			my $go_next = 1;
+			$go_next = 0 if (!$u or $u =~ m/^\s*$/);	#check if any node is empty or undef
+			$go_next = 0 if (!$v or $v =~ m/^\s*$/);	#check if any node is empty or undef
+			$go_next = 0 if (!$s or $s =~ m/^\s*$/);	#check if any node is empty or undef
+			$go_next = 0 if (!$t or $t =~ m/^\s*$/);	#check if any node is empty or undef
+			if ($go_next){
 				$edge_count{$first_edge} = 0;	#remove edge
 				last EDGE;
 			} else {	#repeat the $i th iteration if any node is false
