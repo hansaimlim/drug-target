@@ -169,6 +169,9 @@ sub Randomize_String
 			if ($u && $v && $s && $t){
 				$edge_count{$first_edge} = 0;	#remove edge
 				last EDGE;
+			} else {	#repeat the $i th iteration if any node is false
+				$i--;
+				next SHUFFLE;
 			}
 		}
 		while(!$dist1){
@@ -179,16 +182,16 @@ sub Randomize_String
 		}
 		chomp($dist1);
 		chomp($dist2);
-		$ppi{$u}{$t} = $dist1;	
-		$ppi{$s}{$v} = $dist2;
+	#	$ppi{$u}{$t} = $dist1;	
+	#	$ppi{$s}{$v} = $dist2;
 		$new_edge1 = "$u\t$t\t$dist1";
 		$new_edge2 = "$s\t$v\t$dist2";
 		$edge_count{$new_edge1} = 1;
 		$edge_count{$new_edge2} = 1;
 		push (@edges, $new_edge1);
 		push (@edges, $new_edge2);
-		delete($ppi{$u}{$v});	#remove original edge
-		delete($ppi{$s}{$t});
+	#	delete($ppi{$u}{$v});	#remove original edge
+	#	delete($ppi{$s}{$t});
 	}
 	my %rand_ppi;
 	foreach my $edge (keys %edge_count){
