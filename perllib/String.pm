@@ -135,6 +135,7 @@ sub Randomize_String
 		my ($u, $v, $s, $t);	#nodes
 		EDGE: while(@edges){
 			my $first_edge = shift @edges;
+			next EDGE if $edge_count{$first_edge} == 0;	#removed edges
 			my @words1 = split(/\t/, $first_edge);
 			my $u_temp = shift @words1;
 			my $v_temp = shift @words1;
@@ -147,8 +148,8 @@ sub Randomize_String
 			} else {
 				next EDGE;
 			}
-			EDGE2: foreach my $e (@edges){
-				my $second_edge = $e;
+			EDGE2: foreach my $second_edge (@edges){
+				next EDGE2 if $edge_count{$second_edge} == 0;	#removed edges
 				my @words2 = split(/\t/, $second_edge);
 				my $s_temp = shift @words2;
 				my $t_temp = shift @words2;
@@ -160,14 +161,15 @@ sub Randomize_String
 						$edge2 = $second_edge;
 						$s = $s_temp;
 						$t = $t_temp;
+						$edge_count{$second_edge} = 0;	#remove edge
 						last EDGE2;
 					}
 				}
 			}
-		}
-		unless ($u && $v && $s && $t){	#failed to get shuffled edge; perform $i th iteration again
-			$i--;
-			next SHUFFLE;
+			if ($u && $v && $s && $t){
+				$edge_count{$first_edge} = 0;	#remove edge
+				last EDGE;
+			}
 		}
 		while(!$dist1){
 			$dist1 = shift @distances_shuffled;
@@ -181,12 +183,24 @@ sub Randomize_String
 		$ppi{$s}{$v} = $dist2;
 		$new_edge1 = "$u\t$t\t$dist1";
 		$new_edge2 = "$s\t$v\t$dist2";
+		$edge_count{$new_edge1} = 1;
+		$edge_count{$new_edge2} = 1;
 		push (@edges, $new_edge1);
 		push (@edges, $new_edge2);
 		delete($ppi{$u}{$v});	#remove original edge
 		delete($ppi{$s}{$t});
 	}
-	return \%ppi;	#this ppi is separate from the original string data; it is shuffled, but may contain some identical edges.
+	my %rand_ppi;
+	foreach my $edge (keys %edge_count){
+		next if $edge_count{$edge} == 0;	#removed ones
+		my @words = split(/\t/, $edge);
+		my $g1 = shift @words;
+		my $g2 = shift @words;
+		my $d = shift @words;
+		chomp($d);
+		$rand_ppi{$g1}{$g2} = $d;
+	}
+	return \%rand_ppi;	#this ppi is separate from the original string data; it is shuffled, but may contain some intact edges.
 }
 sub StringData
 {
