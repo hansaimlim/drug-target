@@ -179,8 +179,8 @@ sub Randomize_String
 		$new_edge2 = "$s\t$v\t$dist2";
 		push (@edges, $new_edge1);
 		push (@edges, $new_edge2);
-		undef($ppi{$u}{$v});	#remove original edge
-		undef($ppi{$s}{$t});
+		delete($ppi{$u}{$v});	#remove original edge
+		delete($ppi{$s}{$t});
 	}
 	return \%ppi;	#this ppi is separate from the original string data; it is shuffled, but may contain some identical edges.
 }
