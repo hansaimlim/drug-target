@@ -27,7 +27,7 @@ use warnings;
 #}
 #print $num_edges,"\n";
 #----------------------------------------------------------TEST AREA-----------------------------
-my $is_demo_on = 0;	#read demo data (shorter list) if 1
+my $is_demo_on = 1;	#read demo data (shorter list) if 1
 sub new
 {
         my $class = shift @_;
@@ -110,7 +110,7 @@ sub Randomize_String
 	my( $self, $n ) = @_;	#will shuffle n times
 	my %ppi = %$self;	#do not use reference below; to preserve original ppi
         my $file = "./static/String/9606.protein.links.v9.1-GN-dist.txt";
-        $file = "./static/String/9606.protein.links.v9.1-GN-dist_demo.txt" if $is_demo_on;
+        $file = "./static/demo/nonrandomppi.tsv" if $is_demo_on;
 	my @edges_original;
 	my @distances;	#collection of distances; duplicate values are allowed
 	my %edge_count;
@@ -191,7 +191,7 @@ sub StringData
 	#At this point, the redundant networks are preserved intentionally
 	#The redundancies will be removed when getting edges from node
         my $file = "./static/String/9606.protein.links.v9.1-GN-dist.txt";
-        $file = "./static/String/9606.protein.links.v9.1-GN-dist.txt" if $is_demo_on;
+        $file = "./static/demo/nonrandomppi.tsv" if $is_demo_on;
         my %Data;
         open my $String, '<', $file or die "Could not open PPI file, $file: $!\n";
         while (my $line = <$String>){
