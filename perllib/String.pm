@@ -27,7 +27,7 @@ use warnings;
 #}
 #print $num_edges,"\n";
 #----------------------------------------------------------TEST AREA-----------------------------
-my $is_demo_on = 1;	#read demo data (shorter list) if 1
+my $is_demo_on = 0;	#read demo data (shorter list) if 1
 sub new
 {
         my $class = shift @_;
@@ -201,6 +201,7 @@ sub Randomize_String
 	my %rand_ppi;
 	foreach my $edge (keys %edge_count){
 		next if $edge_count{$edge} == 0;	#removed ones
+		next if $edge =~ m/^\s+/;	#edge starting with white spaces
 		my @words = split(/\t/, $edge);
 		my $g1 = shift @words;
 		my $g2 = shift @words;

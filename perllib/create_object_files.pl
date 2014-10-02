@@ -16,17 +16,17 @@ use warnings;
 #create_cmap_json("1000up");	#done
 #create_cmap_json("1000down");	#done
 #create_cmap_json("1000rand");	#done
-print_random_ppi(20);	#testing the randomization mechanism
-print_random_ppi(30);
-#create_random_ppi_json(10);	#low shuffle numbers are for controlled experiments
-#create_random_ppi_json(20);
-#create_random_ppi_json(30);
-#create_random_ppi_json(100000);
-#create_random_ppi_json(1000000);
-#create_random_ppi_json(2000000);
-#create_random_ppi_json(3000000);
-#create_random_ppi_json(4000000);
-#create_random_ppi_json(5000000);
+#print_random_ppi(20);	#testing the randomization mechanism
+#print_random_ppi(30);
+create_random_ppi_json(10);	#low shuffle numbers are for controlled experiments
+create_random_ppi_json(20);
+create_random_ppi_json(30);
+create_random_ppi_json(100000);
+create_random_ppi_json(1000000);
+create_random_ppi_json(2000000);
+create_random_ppi_json(3000000);
+create_random_ppi_json(4000000);
+create_random_ppi_json(5000000);
 sub print_random_ppi
 {
 	my $n = shift @_;
