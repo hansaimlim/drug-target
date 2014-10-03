@@ -44,6 +44,11 @@ sub rm_special_char_in_drugname
         my $drug = shift @_;
         $drug =~ s/\///g;       #remove slash
 	$drug =~ s/\\//g;	#remove backslash
+	$drug =~ s/'//g;	#remove apostropies
+	$drug =~ s/`//g;	#remove `
+	$drug =~ s/\*//g;	#remove asterisks
+	$drug =~ s/,//g;	#remove commas
+	$drug =~ s/[ ]//g;	#remove empty space
         $drug =~ s/(\-)(\d|\w)/_$2/;    #a dash to an underscore (but not the stereochemical minus sign)
         $drug =~ tr/()/__/;     #parenthesis to underscores
         $drug =~ tr/+-/pm/;     #stereochemical signs to letters
