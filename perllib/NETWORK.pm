@@ -76,19 +76,7 @@ sub get_network
 			next;
 		}
 	
-		my $node_edge_ref = get_node_and_edges(\@sources, \@destinations, $string_ref);
-		my $node_ref = $node_edge_ref->{"nodes"};
-		my $edge_ref = $node_edge_ref->{"edges"};
-		my @edges = @$edge_ref;
-		my @nodes;
-		foreach my $node (@$node_ref){
-			chomp($node);
-			my $node_line = $node . "\t1";	#1 for the fold change
-			push (@nodes, $node_line);
-		}
 		#now ready for output networks
-		my $num_node = scalar(@nodes);	#Number of Nodes: $num_node
-		my $num_edge = scalar(@edges);	#Number of Edges: $num_edge
 		my $current_drug = $cmap_ref->get_cMap_drugname_by_InChIKey($ikey);
 		$current_drug = rm_special_char_in_drugname($current_drug);
 		chomp($current_drug);
@@ -98,8 +86,6 @@ sub get_network
 
 		my $source_file = $outdir . $current_drug . "/source_" . $current_drug . ".txt";
 		my $dest_file = $outdir . $current_drug . "/dest_" . $current_drug . ".txt";
-		my $node_file = $outdir . $current_drug . "/node_" . $current_drug . ".txt";
-		my $edge_file = $outdir . $current_drug . "/edge_" . $current_drug . ".txt";
 		open my $SRC, '>', $source_file or die "Could not open source file $source_file: $!\n";
 		foreach my $src (@sources){
 			print $SRC $src, "\n";
@@ -110,22 +96,8 @@ sub get_network
 			print $DST $dst, "\n";
 		}
 		close $DST;
-		open my $NOD, '>', $node_file or die "Could not open node file $node_file: $!\n";
-		print $NOD "Number of Nodes: $num_node", "\n";
-		foreach my $node (@nodes){
-			print $NOD $node, "\n";
-		}
-		close $NOD;
-		open my $EDG, '>', $edge_file or die "Could not open edge file $edge_file: $!\n";
-		print $EDG "Number of Edges: $num_edge", "\n";
-		foreach my $edge (@edges){
-			print $EDG $edge, "\n";
-		}
-		close $EDG;
 		undef @sources;
 		undef @destinations;
-		undef @nodes;
-		undef @edges;
 	}
 	return;
 }
