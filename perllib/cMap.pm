@@ -21,7 +21,7 @@ sub new
 	my $range = shift @_;
 	my $is_PUGREST_needed = shift @_;
 	my $self = {};
-	if ($is_PUGREST_needed == 1){
+	if ($is_PUGREST_needed == 1 or $is_PUGREST_needed =~ m/on/i){
 		$self = cMapdata($range);	#performs PUGREST InChIKey converting
 	} else {
 		$self = cMapSimple($range);	#does not perform PUGREST; use json to load hash
