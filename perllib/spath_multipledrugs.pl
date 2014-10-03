@@ -24,22 +24,22 @@ my @drug_dirs = read_directory($input_folder);	#sub directories with drug names
 foreach my $drug (@drug_dirs){
 	next if $drug =~ m/^\.+/;
 	my $sub_dir = $input_folder . $drug;
+	$sub_dir = dirname_add_slash($sub_dir);
 	my @files = read_directory($sub_dir);
 	my $source_file;
 	my $dest_file;
 	foreach my $file (@files){
-		$source_file = $file if $file =~ m/source/;
-		$dest_file = $file if $file =~ m/dest/;
+		$source_file = $sub_dir.$file if $file =~ m/source/;
+		$dest_file = $sub_dir.$file if $file =~ m/dest/;
 	}
 	my $spath_outfile = $output_folder . "spath_" . $drug . ".txt";
-        my $spathcmd = 'shortestpath';
-        $spathcmd .= " -n $node_file";
-        $spathcmd .= " -e $edge_file";
-        $spathcmd .= " -s $source_file";
-        $spathcmd .= " -d $dest_file";
-        $spathcmd .= " >> $spath_outfile";
-        system($spathcmd);      #this command produces shortestpath output
-
+	my $spathcmd = 'shortestpath';
+	$spathcmd .= " -n $node_file";
+	$spathcmd .= " -e $edge_file";
+	$spathcmd .= " -s $source_file";
+	$spathcmd .= " -d $dest_file";
+	$spathcmd .= " >> $spath_outfile";
+	system($spathcmd);      #this command produces shortestpath output
 	open my $SPATH, '<', $spath_outfile or die "Could not open shortest path output file $spath_outfile: $!\n";
 	while (my $line = <$SPATH>){
 		next if $line =~ m/^the\snumber\sof/i;
