@@ -32,13 +32,14 @@ foreach my $drug (@drug_dirs){
 		$source_file = $sub_dir.$file if $file =~ m/source/;
 		$dest_file = $sub_dir.$file if $file =~ m/dest/;
 	}
-	my $spath_outfile = $output_folder . "spath_" . $drug . ".txt";
+	my $drugname_clear = rm_special_char_in_drugname($drug);
+	my $spath_outfile = $output_folder . "spath_" . $drugname_clear . ".txt";
 	my $spathcmd = 'shortestpath';
 	$spathcmd .= " -n $node_file";
 	$spathcmd .= " -e $edge_file";
 	$spathcmd .= " -s $source_file";
 	$spathcmd .= " -d $dest_file";
-	$spathcmd .= " >> $spath_outfile";
+	$spathcmd .= " > $spath_outfile";
 	system($spathcmd);      #this command produces shortestpath output
 	open my $SPATH, '<', $spath_outfile or die "Could not open shortest path output file $spath_outfile: $!\n";
 	while (my $line = <$SPATH>){
