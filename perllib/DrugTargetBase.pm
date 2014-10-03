@@ -43,10 +43,10 @@ sub rm_special_char_in_drugname
 	#specialized for cmap drugnames, some of which contain slashes, dashes, parenthesis or signs
         my $drug = shift @_;
         $drug =~ s/\///g;       #remove slash
+	$drug =~ s/\\//g;	#remove backslash
         $drug =~ s/(\-)(\d|\w)/_$2/;    #a dash to an underscore (but not the stereochemical minus sign)
         $drug =~ tr/()/__/;     #parenthesis to underscores
         $drug =~ tr/+-/pm/;     #stereochemical signs to letters
-        $drug =~ tr/\\//;       #remove backslash -- just in case
         return $drug;
 }
 sub one_column_file_switch
