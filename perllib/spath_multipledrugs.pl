@@ -14,8 +14,8 @@ my $output_folder = dirname_add_slash(shift @ARGV);
 my $distance_file = shift @ARGV;
 chomp($distance_file);
 
-my $edge_file = "./static/edge/9606.protein.links.v9.1-GN-dist.txt";
-my $node_file = "./static/node/node.txt";
+my $edge_file = "./static/edge/9606.protein.links.v9.1-GN-dist_max0.5.txt";
+my $node_file = "./static/node/node_max0.5.txt";
 make_dir($output_folder);
 
 open my $Distance_file, '>', $distance_file or die "Could not open distance file $distance_file: $!\n";
