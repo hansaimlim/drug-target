@@ -9,15 +9,27 @@ die "Usage: $0 <username> <password>\n" unless @ARGV == 2;
 my $user = shift @ARGV;
 my $password = shift @ARGV;
 chomp($password);
-
-my $accession = 'P41595';
-my $start = 71;
-my $end = 380;
 my $dbh = connect_chembl_mysql($user, $password);
-my $subseq = get_substring($dbh, $accession, $start, $end);
-print $subseq, "\n";
-
 my @multi_domain_targets = get_accession_multidomain($dbh);	#Targets in this array appear to have multiple binding domains; 37 accessions for chembl_19
+my $zincfile = "./zinc/idmap/zinc_idmap.tsv";
+open my $ZINC, '<', $zincfile or die "Could not open zinc idmap file $zincfile: $!\n";
+while (my $line = <$ZINC>){
+	next if $. == 1;	#skip first line
+	my @words = split(/\t/, $line);
+	my $genename = shift @words;
+	my $accession = shift @words;
+	my $chembl = shift @words;
+	my $annotation = shift @words;
+	chomp($annotation);
+	
+	my $start = 71;
+	my $end = 380;
+	my $subseq = get_substring($dbh, $accession, $start, $end);
+}
+close $ZINC;
+sub get_pdb {
+
+}
 sub connect_chembl_mysql {
 	my $user = shift @_;
 	my $pw = shift @_;
