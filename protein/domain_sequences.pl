@@ -21,7 +21,15 @@ while (my $line = <$ZINC>){
 	my $chembl = shift @words;
 	my $annotation = shift @words;
 	chomp($annotation);
-	
+	my $num_site = get_num_site($dbh, $accession);
+	if ($num_site == 1){	#Protein with single binding domain
+
+	} elsif ($num_site > 1) {	#Protein with multiple binding domains
+
+	} else {	#0 binding domain or no information (NULL)
+		print "Protein $accession: num_site is 0 or NULL ($num_site)\n";
+		next;
+	}
 	my $start = 71;
 	my $end = 380;
 	my $subseq = get_substring($dbh, $accession, $start, $end);
@@ -53,7 +61,13 @@ sub get_substring {
 }
 
 sub get_num_site {
-
+	my ($dbh, $accession) = @_;
+	my $sth = $dbh->prepare("SELECT COUNT(cd.compd_id) FROM component_domains cd 
+		INNER JOIN component_sequences cs ON cd.component_id = cs.component_id WHERE cs.accession = '$accession'");
+	$sth->execute() or die $DBI::errstr;
+	my $num_site = $sth->fetchrow_array();
+	$sth->finish();
+	return $num_site;
 }
 
 sub get_accession_multidomain {
