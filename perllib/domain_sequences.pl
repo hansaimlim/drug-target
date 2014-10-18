@@ -11,7 +11,7 @@ my $password = shift @ARGV;
 chomp($password);
 my $dbh = connect_chembl_mysql($user, $password);
 my @multi_domain_targets = get_accession_multidomain($dbh);	#Targets in this array appear to have multiple binding domains; 37 accessions for chembl_19
-my $zincfile = "./zinc/idmap/zinc_idmap.tsv";
+my $zincfile = "./static/idmap/zinc_idmap.tsv";
 open my $ZINC, '<', $zincfile or die "Could not open zinc idmap file $zincfile: $!\n";
 while (my $line = <$ZINC>){
 	next if $. == 1;	#skip first line
@@ -50,9 +50,13 @@ sub connect_chembl_mysql {
 	return $dbh;
 }
 
+sub get_domain {
+	
+}
 sub get_substring {
 	my ($dbh, $accession, $start, $end) = @_;
-	my $sth = $dbh->prepare("SELECT SUBSTRING(sequence, $start, ($end-$start+1)) FROM component_sequences WHERE accession = '$accession'");
+	my $sth = $dbh->prepare("SELECT SUBSTRING(sequence, $start, ($end-$start+1)) FROM component_sequences 
+				WHERE accession = '$accession'");
 	$sth->execute() or die $DBI::errstr;
 	my $num_row = $sth->rows;
 	my $sequence = $sth->fetchrow_array();
@@ -63,7 +67,8 @@ sub get_substring {
 sub get_num_site {
 	my ($dbh, $accession) = @_;
 	my $sth = $dbh->prepare("SELECT COUNT(cd.compd_id) FROM component_domains cd 
-		INNER JOIN component_sequences cs ON cd.component_id = cs.component_id WHERE cs.accession = '$accession'");
+				INNER JOIN component_sequences cs ON cd.component_id = cs.component_id 
+				WHERE cs.accession = '$accession'");
 	$sth->execute() or die $DBI::errstr;
 	my $num_site = $sth->fetchrow_array();
 	$sth->finish();
@@ -72,7 +77,11 @@ sub get_num_site {
 
 sub get_accession_multidomain {
 	my $dbh = shift @_;
-	my $sth = $dbh->prepare("SELECT cs.accession FROM component_sequences cs INNER JOIN component_domains cd ON cs.component_id = cd.component_id INNER JOIN site_components sc ON cs.component_id = sc.component_id AND cd.domain_id = sc.domain_id GROUP BY cs.accession HAVING (COUNT(DISTINCT(cd.compd_id)) > 1 AND COUNT(DISTINCT(cd.domain_id)) > 1)");
+	my $sth = $dbh->prepare("SELECT cs.accession FROM component_sequences cs 
+				INNER JOIN component_domains cd ON cs.component_id = cd.component_id 
+				INNER JOIN site_components sc ON cs.component_id = sc.component_id AND cd.domain_id = sc.domain_id 
+				GROUP BY cs.accession 
+				HAVING (COUNT(DISTINCT(cd.compd_id)) > 1 AND COUNT(DISTINCT(cd.domain_id)) > 1)");
 	$sth->execute() or die $DBI::errstr;
 	my @accessions;
 	while(my $accession = $sth->fetchrow_array()){
