@@ -2,6 +2,8 @@
 use strict;
 use warnings;
 use DBI;
+use List::Util qw( min max );
+use LWP::Simple qw( $ua getstore );
 use Data::Dumper;
 
 die "Usage: $0 <username> <password>\n" unless @ARGV == 2;
@@ -23,20 +25,98 @@ while (my $line = <$ZINC>){
 	chomp($annotation);
 	my $num_site = get_num_site($dbh, $accession);
 	if ($num_site == 1){	#Protein with single binding domain
-
+		my $start = get_start_position($dbh, $accession);
+		my $end = get_end_position($dbh, $accession);
+		my $subseq = get_substring($dbh, $accession, $start, $end);
+		output_fasta($genename, $accession, $start, $end, $annotation, $subseq);
 	} elsif ($num_site > 1) {	#Protein with multiple binding domains
-
+		my @starts = get_start_position($dbh, $accession);
+		my @ends = get_end_position($dbh, $accession);
+		my $start = min (@starts);
+		my $end = max (@ends);
+		my $subseq = get_substring($dbh, $accession, $start, $end);
+		output_fasta($genename, $accession, $start, $end, $annotation, $subseq);
 	} else {	#0 binding domain or no information (NULL)
 		print "Protein $accession: num_site is 0 or NULL ($num_site)\n";
 		next;
 	}
-	my $start = 71;
-	my $end = 380;
-	my $subseq = get_substring($dbh, $accession, $start, $end);
 }
 close $ZINC;
-sub get_pdb {
 
+sub get_pdb {
+	my ($genename, $accession) = @_;
+	my @PDBs = get_PDB_by_UniProt($accession);
+	foreach my $pdb (@PDBs){
+		chomp($pdb);
+		download_PDB($genename, $pdb);
+	}
+	return;
+}
+
+sub download_PDB {
+        my ($genename, $pdb) = @_;
+        chomp($pdb);
+        my $url = "http://www.rcsb.org/pdb/files/".$pdb.".pdb";
+	my $filepath = "../protein/$genename"."/";
+	make_dir($filepath);
+	my $pdb_file = $filepath . $pdb . ".pdb";
+        getstore($url, $pdb_file);
+	return;
+}
+sub get_PDB_by_UniProt {
+        my $UniProt = shift @_;
+        my $XML_query = qq(
+<?xml version="1.0" encoding="UTF-8"?>
+<orgPdbQuery>    
+    <queryType>org.pdb.query.simple.UpAccessionIdQuery</queryType>
+    <description>Simple query for a list of UniprotKB Accession IDs: $UniProt</description>   
+    <accessionIdList>$UniProt</accessionIdList>
+</orgPdbQuery>
+        );
+        # Create a request                                                                                  
+        my $request = HTTP::Request->new( POST => 'http://www.rcsb.org/pdb/rest/search/');
+        $request->content_type( 'application/x-www-form-urlencoded' );
+        $request->content( $XML_query );
+
+        # Post the XML query                                                                                
+        print "\n querying PDB...";
+        print "\n";
+        my $response = $ua->request( $request );
+
+        # Check to see if there is an error
+        unless( $response->is_success ) {
+            print "\n an error occurred: ", $response->status_line, "\n";
+        }
+        # Print response content in either case
+        my $result = $response->content;
+        my @PDBs = split(/\n/, $response->content);
+        return @PDBs;
+}
+
+sub divide_string {
+	my ($string, $cut_length) = @_;
+	my @cut_strings;
+	while ($string){
+		my $cut_string = substr ($string, 0, $cut_length);
+		push (@cut_strings, $cut_string);
+		$string = substr($string, $cut_length);	#the left string
+	}
+	return @cut_strings;
+}
+sub output_fasta {
+	my ($genename, $accession, $start, $end, $annotation, $sequence) = @_;
+	my $filepath = "../protein/$genename"."/";
+	make_dir($filepath);
+	my $outfile = $filepath . $genename . ".fas";
+	my $length = $end - $start + 1;
+	open my $FASTA, '>', $outfile or die "Could not open FASTA file $outfile: $!\n";
+	print $FASTA ">emb|$accession|length:$length($start:$end)|$annotation\n";
+	my @divided = divide_string($sequence, 70);
+	foreach my $seq (@divided){
+		print $FASTA $seq, "\n";
+	}
+	close $FASTA;
+	return;
 }
 sub connect_chembl_mysql {
 	my $user = shift @_;
@@ -50,8 +130,49 @@ sub connect_chembl_mysql {
 	return $dbh;
 }
 
-sub get_domain {
-	
+sub get_start_position {
+	my ($dbh, $accession) = @_;
+	my $sth = $dbh->prepare("SELECT cd.start_position FROM component_domains cd 
+				INNER JOIN component_sequences cs ON cd.component_id = cs.component_id 
+				INNER JOIN site_components sc ON cs.component_id = sc.component_id AND cd.domain_id = sc.domain_id 
+				WHERE cs.accession = '$accession'");
+        $sth->execute() or die $DBI::errstr;
+	my $num_row = $sth->rows;
+	if ($num_row == 1){
+		my $start = $sth->fetchrow_array();
+		$sth->finish();
+		return $start;	#single site
+	} else {
+		my @start_positions;
+		while (my $start = $sth->fetchrow_array()){
+			chomp($start);
+			push (@start_positions, $start);
+		}
+		$sth->finish();
+		return @start_positions;
+	}
+}
+sub get_end_position {
+	my ($dbh, $accession) = @_;
+	my $sth = $dbh->prepare("SELECT cd.end_position FROM component_domains cd 
+				INNER JOIN component_sequences cs ON cd.component_id = cs.component_id 
+				INNER JOIN site_components sc ON cs.component_id = sc.component_id AND cd.domain_id = sc.domain_id 
+				WHERE cs.accession = '$accession'");
+        $sth->execute() or die $DBI::errstr;
+	my $num_row = $sth->rows;
+	if ($num_row == 1){
+		my $end = $sth->fetchrow_array();
+		$sth->finish();
+		return $end;	#single site
+	} else {
+		my @end_positions;
+		while (my $end = $sth->fetchrow_array()){
+			chomp($end);
+			push (@end_positions, $end);
+		}
+		$sth->finish();
+		return @end_positions;
+	}
 }
 sub get_substring {
 	my ($dbh, $accession, $start, $end) = @_;
@@ -109,5 +230,4 @@ sub dirname_add_slash
         $dir .= '/' unless $dir =~ m/\/$/;
         return $dir;
 }
-
 exit;
