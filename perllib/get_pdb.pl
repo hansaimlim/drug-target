@@ -21,27 +21,15 @@ sub get_PDB_by_UniProt {
 	my $UniProt = shift @_;
 	my $XML_query = qq(
 <?xml version="1.0" encoding="UTF-8"?>
-
 <orgPdbQuery>    
-
     <queryType>org.pdb.query.simple.UpAccessionIdQuery</queryType>
-
     <description>Simple query for a list of UniprotKB Accession IDs: $UniProt</description>   
-
     <accessionIdList>$UniProt</accessionIdList>
-
 </orgPdbQuery>
 	);
-
-	# you can configure a proxy...                                                                          
-	#$ua->proxy( http => 'http://yourproxy:8080' );
-
 	# Create a request                                                                                  
-
 	my $request = HTTP::Request->new( POST => 'http://www.rcsb.org/pdb/rest/search/');
-
 	$request->content_type( 'application/x-www-form-urlencoded' );
-
 	$request->content( $XML_query );
 
 	# Post the XML query                                                                                
@@ -52,11 +40,8 @@ sub get_PDB_by_UniProt {
 	# Check to see if there is an error
 	unless( $response->is_success ) {
 	    print "\n an error occurred: ", $response->status_line, "\n";
-
 	}
-
 	# Print response content in either case
-#	print $response->content;
 	my $result = $response->content;
 	my @PDBs = split(/\n/, $response->content);
 	return @PDBs;
