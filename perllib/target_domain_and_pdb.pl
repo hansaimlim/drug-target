@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+no warnings ('uninitialized', 'substr');
 use DBI;
 use List::Util qw( min max );
 use LWP::Simple qw( $ua getstore );
@@ -12,7 +13,7 @@ my $user = shift @ARGV;
 my $password = shift @ARGV;
 chomp($password);
 my $dbh = connect_chembl_mysql($user, $password);
-my @multi_domain_targets = get_accession_multidomain($dbh);	#Targets in this array appear to have multiple binding domains; 37 accessions for chembl_19
+#my @multi_domain_targets = get_accession_multidomain($dbh);	#Targets in this array appear to have multiple binding domains; 37 accessions for chembl_19
 my $zincfile = "./static/idmap/zinc_idmap.tsv";
 open my $ZINC, '<', $zincfile or die "Could not open zinc idmap file $zincfile: $!\n";
 while (my $line = <$ZINC>){
@@ -29,6 +30,8 @@ while (my $line = <$ZINC>){
 		my $end = get_end_position($dbh, $accession);
 		my $subseq = get_substring($dbh, $accession, $start, $end);
 		output_fasta($genename, $accession, $start, $end, $annotation, $subseq);
+		get_pdb($genename, $accession);
+		next;
 	} elsif ($num_site > 1) {	#Protein with multiple binding domains
 		my @starts = get_start_position($dbh, $accession);
 		my @ends = get_end_position($dbh, $accession);
@@ -36,6 +39,8 @@ while (my $line = <$ZINC>){
 		my $end = max (@ends);
 		my $subseq = get_substring($dbh, $accession, $start, $end);
 		output_fasta($genename, $accession, $start, $end, $annotation, $subseq);
+		get_pdb($genename, $accession);
+		next;
 	} else {	#0 binding domain or no information (NULL)
 		print "Protein $accession: num_site is 0 or NULL ($num_site)\n";
 		next;
@@ -79,8 +84,6 @@ sub get_PDB_by_UniProt {
         $request->content( $XML_query );
 
         # Post the XML query                                                                                
-        print "\n querying PDB...";
-        print "\n";
         my $response = $ua->request( $request );
 
         # Check to see if there is an error
@@ -176,7 +179,8 @@ sub get_end_position {
 }
 sub get_substring {
 	my ($dbh, $accession, $start, $end) = @_;
-	my $sth = $dbh->prepare("SELECT SUBSTRING(sequence, $start, ($end-$start+1)) FROM component_sequences 
+	my $length = $end - $start + 1;
+	my $sth = $dbh->prepare("SELECT SUBSTRING(sequence, $start, $length) FROM component_sequences 
 				WHERE accession = '$accession'");
 	$sth->execute() or die $DBI::errstr;
 	my $num_row = $sth->rows;
@@ -187,9 +191,10 @@ sub get_substring {
 
 sub get_num_site {
 	my ($dbh, $accession) = @_;
-	my $sth = $dbh->prepare("SELECT COUNT(cd.compd_id) FROM component_domains cd 
+	my $sth = $dbh->prepare("SELECT COUNT(DISTINCT(cd.compd_id)) FROM component_domains cd 
 				INNER JOIN component_sequences cs ON cd.component_id = cs.component_id 
-				WHERE cs.accession = '$accession'");
+				INNER JOIN site_components sc ON (sc.component_id = cs.component_id) AND (cd.domain_id = sc.domain_id) 
+				WHERE cs.accession = '$accession'"); 
 	$sth->execute() or die $DBI::errstr;
 	my $num_site = $sth->fetchrow_array();
 	$sth->finish();
