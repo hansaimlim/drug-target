@@ -1,0 +1,637 @@
+{% extends "base.html" %}
+{% load static %}
+{% block header %}
+{% include 'header_400.html' %}
+{% endblock header %}
+
+{% block header_image %}
+{% include 'header_background_400.html' %}
+{% endblock header_image %}
+{% block content %}
+<div class="row mt-4">
+  <div class="col-md-8 col-sm-12 mb-0">
+    <span class="h4 font-times font-weight-bold">Interface information
+    </span>
+  </div>
+</div>
+<div class="container-fluid mt-0">
+  <div class="row mt-2">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>
+              Template
+            </th>
+            <th>
+              PDB
+            </th>
+            <th>
+              Rosetta interaction score
+            </th>
+            <th>
+              <span data-toggle="popover" data-trigger="hover" title="Number of predicted HMIs"
+              data-content="Number of predicted host-microbe interactions associated with this interface template.">
+              HMIs
+              </span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              {{ pdbid }}_{{ chain_id_left }}_{{ chain_id_right }}
+            </td>
+            <td>
+              <a class="link"
+              href="https://www.rcsb.org/structure/{{ pdbid }}"
+              target="_blank"
+              rel="noopener noreferrer">
+              {{ pdbid }}
+              </a>
+            </td>
+            <td>
+              {% if interface.rosetta_interaction_score_precomputed %}
+                {{ interface.rosetta_interaction_score }}
+              {% else %}
+                Not available
+              {% endif %}
+            </td>
+            <td>
+              {% if number_of_hmis > 0 %}
+                  <input type="submit" value="Show {{ number_of_hmis }} results" class="btn btn-sm btn-primary" 
+                  onclick="showLoaderOnClick('{% url 'hmi:template_linked_results' pk=interface.pk ver=interface.version %}')">
+              {% else %}
+                {{ number_of_hmis }}
+              {% endif %}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="row mt-2">
+  <div class="table-responsive">
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>
+          Chain
+        </th>
+        <th>
+          Gene
+        </th>
+        <th>
+          Gene IDs
+        </th>
+        <th>
+          Tissues
+        </th>
+        <th>
+          Chain length
+        </th>
+        <th>
+          Hot spots
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr id="left-chain-row" class="table-danger">
+        <td>
+            Chain {{ chain_id_left }}
+        </td>
+        <td>
+          {% if interface.left_gene.name %}
+          <a class="link"
+          href="https://www.uniprot.org/uniprot/{{ interface.left_gene.uniprot_accession }}"
+          target="_blank"
+          rel="noopener noreferrer">{{ interface.left_gene.name }}
+          </a>
+          {% else %}
+          Not available
+          {% endif %}
+        </td>
+        <td>
+            {{ interface.left_gene.uniprot_accession }}, {{ interface.left_gene.uniprot_protein_name }}
+        </td>
+        <td>
+          <span id="left_chain_tissue_expression" class="badge badge-secondary" style="font-size:0.75rem;"
+            data-toggle="popover" data-trigger="hover" title="Tissues expression: {{ chain_id_left }}" data-placement="bottom"
+            data-content="High expression in: {{ tissue_expression_left.high }}">
+            Tissues Expr.
+          </span>
+          <span id="left_chain_tissue_expression_not" class="badge badge-light" style="font-size:0.75rem;"
+            data-toggle="popover" data-trigger="hover" title="Not expressed: {{ chain_id_left }}" data-placement="bottom"
+            data-content="Not expressed in: {{ tissue_expression_left.not }}">
+            X Tissues
+          </span>
+        </td>
+        <td>
+          {{ interface.left_chain_length }}
+        </td>
+        <td>
+          <span class="badge badge-secondary" data-toggle="popover" data-trigger="hover" style="font-size:0.8rem;"
+          title="Hotpots on chain {{ chain_id_left }}"
+          data-content="
+          {% if left_hotspots %}
+            {% for hot in left_hotspots %}
+              {{ hot }}&nbsp;
+            {% endfor %}
+          {% else %}
+            No hotspot residue found.
+          {% endif %}">
+          Hot spots
+          </span>
+        </td>
+      </tr>
+      <tr id="right-chain-row" class="table-primary">
+        <td>
+            Chain {{ chain_id_right }}
+        </td>
+        <td>
+          {% if interface.right_gene.name %}
+          <a class="link"
+          href="https://www.uniprot.org/uniprot/{{ interface.right_gene.uniprot_accession }}"
+          target="_blank"
+          rel="noopener noreferrer">{{ interface.right_gene.name }}
+          </a>
+          {% else %}
+          Not available
+          {% endif %}
+        </td>
+        <td>
+          {{ interface.right_gene.uniprot_accession }}, {{ interface.right_gene.uniprot_protein_name }}
+      </td>
+        <td>
+          <span id="right_chain_tissue_expression" class="badge badge-secondary" style="font-size:0.75rem;"
+            data-toggle="popover" data-trigger="hover" title="Tissues expression: {{ chain_id_right }}" data-placement="bottom"
+            data-content="High expression in: {{ tissue_expression_right.high }}">
+            Tissues Expr.
+          </span>
+          <span id="right_chain_tissue_expression_not" class="badge badge-light" style="font-size:0.75rem;"
+            data-toggle="popover" data-trigger="hover" title="Not expressed: {{ chain_id_right }}" data-placement="bottom"
+            data-content="Not expressed in: {{ tissue_expression_right.not }}">
+            X Tissues
+          </span>
+        </td>
+        <td>
+          {{ interface.right_chain_length }}
+        </td>
+        <td>
+          <span class="badge badge-secondary" data-toggle="popover" data-trigger="hover" style="font-size:0.8rem;"
+          title="Hotpots on chain {{ chain_id_right }}"
+          data-content="
+          {% if right_hotspots %}
+            {% for hot in right_hotspots %}
+              {{ hot }}&nbsp;
+            {% endfor %}
+          {% else %}
+            No hotspot residue found.
+          {% endif %}">
+          Hot spots
+          </span>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="viewport-wrap" style="position:relative;">
+      <div id="viewport" style="width:930px; height:800px;"
+      data-id="{{ pdb_file }}">
+      </div>
+    </div>
+  </div>
+  <div class="row mt-1 mb-4">
+    <div class="col-sm-2">
+      <kbd>keyboard</kbd><br>
+      <kbd data-toggle="tooltip" title="Press i to spin">i</kbd> spin<br>
+      <kbd data-toggle="tooltip" title="Press k to rock">k</kbd> rock<br>
+      <kbd data-toggle="tooltip" title="Press p to resume/pause motion">p</kbd> pause<br>
+    </div>
+    <div class="col-sm-3">
+      <kbd>mouse</kbd><br>
+      <kbd data-toggle="tooltip" title="Scroll up/down to zoom in/out">scroll</kbd> zoom in/out<br>
+      <kbd data-toggle="tooltip" title="Left-click and move to rotate">drag-left</kbd> rotate<br>
+      <kbd data-toggle="tooltip" title="Right-click and move to translate">drag-right</kbd> translate<br>
+    </div>
+    <div class="col-sm-7">
+    </div>
+  </div>
+</div>
+
+{% if interface_residues %}
+<div class="row mt-4">
+  <div class="col-md-8 col-sm-12 mb-0">
+    <span class="h4 font-times font-weight-bold">Interface residues
+    </span>
+  </div>
+</div>
+<div class="container container-fluid mt-0 mb-4">
+  <div class="row mt-2">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thread>
+          <tr>
+            <th>
+              Chain
+            </th>
+            <th>
+              Residue type
+            </th>
+            <th>
+              Residue number
+            </th>
+            <th>
+              SASA
+            </th>
+            <th>
+              SASA (relative)
+            </th>
+            <th>
+              Potential
+            </th>
+            <th>
+              Is hotspot
+            </th>
+          </tr>
+        </thread>
+        <tbody>
+          {% for r in interface_residues %}
+          <tr>
+            {% if r.chain == chain_id_left %}
+            <td class="table-danger">
+            {% else %}
+            <td class="table-primary">
+            {% endif %}
+              {{r.chain}}
+            </td>
+            <td>
+              {{r.resname}}
+            </td>
+            <td>
+              {{r.resid}}
+            </td>
+            <td>
+              {{r.sasa|floatformat:2}}
+            </td>
+            <td>
+              {{r.relsasa|floatformat:2}}%
+            </td>
+            <td>
+              {{r.potential|floatformat:2}}
+            </td>
+            {% if r.is_hotspot %}
+            <td class="table-success">
+            {% else %}
+            <td>
+            {% endif %}
+              {{r.is_hotspot}}
+            </td>
+          </tr>
+
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block inline_javascript %}
+  <script src="{% static 'js/particles.min.js' %}"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="{% static 'js/ngl.js' %}"></script>
+  <script type="text/javascript">
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip();
+        $('[data-toggle="popover"]').popover({
+              boundary:'window',
+              html: true
+            });
+        /* particlesJS.load(@dom-id, @path-json, @callback (optional)); */
+        var particles_config = "{% static 'js/particles.json' %}"
+        console.log(particles_config)
+        particlesJS.load('particles-js', particles_config, function() {
+          console.log("callback - particles config loaded");
+        });
+        // Setup to load data from rawgit
+        // Create NGL Stage object
+        var wrap = document.querySelector(".viewport-wrap")
+        var stage = new NGL.Stage( "viewport" );
+        function addElement (el) {
+          Object.assign(el.style, {
+            position: "absolute",
+            zIndex: 100
+          });
+          stage.viewer.container.appendChild(el);
+        };
+
+        function createElement (name, properties, style) {
+          var el = document.createElement(name);
+          Object.assign(el, properties);
+          Object.assign(el.style, style);
+          return el
+        };
+
+        function createSelect (options, properties, style) {
+          var select = createElement("select", properties, style);
+          options.forEach(function (d) {
+            select.add(createElement("option", {
+              value: d[ 0 ], text: d[ 1 ]
+            }));
+          });
+          return select
+        };
+
+        // Handle window resizing
+        window.addEventListener( "resize", function( event ){
+            stage.handleResize();
+        }, false );
+
+        var twochain_file = "{{ twochain_file|safe }}"
+        var chain_id_left = ":{{ chain_id_left }}"
+        var chain_id_right = ":{{ chain_id_right }}"
+        var left_face_ranges = chain_id_left + " and ({{ left_face_ranges }})"
+        var right_face_ranges = chain_id_right + " and ({{ right_face_ranges }})"
+        var left_hotspot_ranges = chain_id_left + " and ({{ left_hotspot_ranges }})"
+        var right_hotspot_ranges = chain_id_right + " and ({{ right_hotspot_ranges }})"
+
+        var gold_color = "#FFD700" //gold
+        var royalblue_color = "#4169E1"
+        var crimson_color = "#DC143C"
+        var coral_color = "#FF7F50" // pathogen on crimson-mimic
+        var turq_color = "#00CED1" // pathogen on blue-mimic
+        var salmon_color = "#FA8072"
+        var skyblue_color = "#00BFFF"
+
+        stage.loadFile(twochain_file).then(function (o) {
+
+          var interface_color_left = coral_color
+          var interface_color_right = royalblue_color
+          var hotspot_color_left = gold_color
+          var hotspot_color_right = gold_color
+          var defaultChainOpacity = 20;
+          var defaultInterfaceOpacity = 20;
+
+          var cartoon_left = o.addRepresentation("cartoon",
+          {
+            color: crimson_color,
+            sele: chain_id_left,
+            visible: true
+          });
+          var cartoon_right = o.addRepresentation("cartoon",
+          {
+            color: royalblue_color,
+            sele: chain_id_right,
+            visible: true
+          });
+
+          var interface_left = o.addRepresentation("surface",
+              {sele: left_face_ranges,
+               surfaceType: "av",
+               contour: true,
+               color: salmon_color,
+               name: "interface_left",
+               visible: true
+              }
+          );
+          var interface_right = o.addRepresentation("surface",
+              {sele: right_face_ranges,
+               surfaceType: "av",
+               contour: true,
+               color: skyblue_color,
+               name: "interface_right",
+               visible: true
+              }
+          );
+          var hotspot_left = o.addRepresentation("ball+stick",
+              {
+                sele: left_hotspot_ranges,
+                color: hotspot_color_left,
+                name: "hotspot_left"
+              }
+          )
+          var hotspot_left_label = o.addRepresentation("label", {
+              name: "hotspot_left_label",
+              fontFamily: "sans-serif",
+              fontWeight: "bold",
+              fontStyle: "normal",
+              opacity: 1,
+              sdf: true,
+              sele: left_hotspot_ranges + " and .CA",
+              labelType: "res",
+              color: hotspot_color_left
+            });
+          var hotspot_right = o.addRepresentation("ball+stick",
+              {
+                sele: right_hotspot_ranges,
+                color: hotspot_color_right,
+                name: "hotspot_right"
+              }
+          )
+          var hotspot_right_label = o.addRepresentation("label", {
+              name: "hotspot_right_label",
+              fontFamily: "sans-serif",
+              fontWeight: "bold",
+              fontStyle: "normal",
+              opacity: 1,
+              sdf: true,
+              sele: right_hotspot_ranges + " and .CA",
+              labelType: "res",
+              color: hotspot_color_right
+            });;
+          var ap = o.structure.getAtomProxy();
+
+          var leftInterfaceButton = createElement("input", {
+            type: "button",
+            value: "Toggle Interface " + "{{ chain_id_left }}",
+            name: "leftInterfaceButton",
+          });
+          leftInterfaceButton.style.position = "relative";
+          leftInterfaceButton.style.top = 0.05*Math.abs(wrap.offsetHeight) + "px";
+          leftInterfaceButton.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          leftInterfaceButton.onclick = function(e) {
+            interface_left.toggleVisibility();
+          };
+          addElement(leftInterfaceButton);
+          $(leftInterfaceButton).addClass("btn btn-sm btn-outline-danger");
+          var rightInterfaceButton = createElement("input", {
+            type: "button",
+            value: "Toggle Interface " + "{{ chain_id_right }}",
+            name: "rightInterfaceButton",
+            
+          });
+          rightInterfaceButton.style.position = "relative";
+          rightInterfaceButton.style.top = 0.10*Math.abs(wrap.offsetHeight) + "px";
+          rightInterfaceButton.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          rightInterfaceButton.onclick = function(e) {
+            interface_right.toggleVisibility();
+          };
+          addElement(rightInterfaceButton);
+          $(rightInterfaceButton).addClass("btn btn-sm btn-outline-primary");
+
+          var leftHotspotButton = createElement("input", {
+            type: "button",
+            value: "Toggle Hotspots " + "{{ chain_id_left }}",
+            name: "leftHotspotButton"
+          });
+          leftHotspotButton.style.position = "relative";
+          leftHotspotButton.style.top = 0.15*Math.abs(wrap.offsetHeight) + "px";
+          leftHotspotButton.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          leftHotspotButton.onclick = function(e) {
+            hotspot_left.toggleVisibility();
+            hotspot_left_label.toggleVisibility();
+          };
+          addElement(leftHotspotButton);
+          $(leftHotspotButton).addClass("btn btn-sm btn-outline-warning");
+          var rightHotspotButton = createElement("input", {
+            type: "button",
+            value: "Toggle Hotspots " + "{{ chain_id_right }}",
+            name: "rightHotspotButton"
+          });
+          rightHotspotButton.style.position = "relative";
+          rightHotspotButton.style.top = 0.20*Math.abs(wrap.offsetHeight) + "px";
+          rightHotspotButton.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          rightHotspotButton.onclick = function(e) {
+            hotspot_right.toggleVisibility();
+            hotspot_right_label.toggleVisibility();
+          };
+          addElement(rightHotspotButton);
+          $(rightHotspotButton).addClass("btn btn-sm btn-outline-warning");
+
+          opacityRangeText = createElement("span", {
+            innerText: "Interface Transparency",
+            id: "opacityRangeText",
+          }, {color: "lightgrey"})
+          opacityRangeText.style.position = "relative";
+          opacityRangeText.style.top = 0.45*Math.abs(wrap.offsetHeight) + "px";
+          opacityRangeText.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          addElement(opacityRangeText);
+
+          interface_left.setParameters({opacity: 1 - (defaultInterfaceOpacity / 100) });
+          interface_right.setParameters({opacity: 1 - (defaultInterfaceOpacity / 100) });
+
+          var opacityRange = createElement("input", {
+            type: "range",
+            value: defaultInterfaceOpacity,
+            min: 0,
+            max: 100,
+            step: 1,
+            name: "opacityRange"
+          })
+          opacityRange.style.position = "relative";
+          opacityRange.style.top = 0.48*Math.abs(wrap.offsetHeight) + "px";
+          opacityRange.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          opacityRange.oninput = function (e){
+            interface_left.setParameters({opacity: 1 - (e.target.value / 100) });
+            interface_right.setParameters({opacity: 1 - (e.target.value / 100) });
+          };
+          addElement(opacityRange);
+
+          var leftCartoonButton = createElement("input", {
+            type: "button",
+            value: "Toggle Chain " + "{{ chain_id_left }}",
+            name: "leftCartoonButton"
+          });
+          leftCartoonButton.style.position = "relative";
+          leftCartoonButton.style.top = 0.25*Math.abs(wrap.offsetHeight) + "px";
+          leftCartoonButton.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          leftCartoonButton.onclick = function(e) {
+            cartoon_left.toggleVisibility();
+          };
+          addElement(leftCartoonButton);
+          $(leftCartoonButton).addClass("btn btn-sm btn-danger");
+          var rightCartoonButton = createElement("input", {
+            type: "button",
+            value: "Toggle Chain " + "{{ chain_id_right }}",
+            name: "rightCartoonButton"
+          });
+          rightCartoonButton.style.position = "relative";
+          rightCartoonButton.style.top = 0.30*Math.abs(wrap.offsetHeight) + "px";
+          rightCartoonButton.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          rightCartoonButton.onclick = function(e) {
+            cartoon_right.toggleVisibility();
+          };
+          addElement(rightCartoonButton);
+          $(rightCartoonButton).addClass("btn btn-sm btn-primary");
+
+          chainOpacityRangeText = createElement("span", {
+            innerText: "Chains Transparency",
+            id: "chainOpacityRangeText",
+          }, {color: "lightgrey"})
+          chainOpacityRangeText.style.position = "relative";
+          chainOpacityRangeText.style.top = 0.50*Math.abs(wrap.offsetHeight) + "px";
+          chainOpacityRangeText.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          addElement(chainOpacityRangeText);
+
+          cartoon_left.setParameters({opacity: 1 - (defaultChainOpacity / 100) });
+          cartoon_right.setParameters({opacity: 1 - (defaultChainOpacity / 100) });
+
+          var chainOpacityRange = createElement("input", {
+            type: "range",
+            value: defaultChainOpacity,
+            min: 0,
+            max: 100,
+            step: 1,
+            name: "chainOpacityRange"
+          })
+          chainOpacityRange.style.position = "relative";
+          chainOpacityRange.style.top = 0.53*Math.abs(wrap.offsetHeight) + "px";
+          chainOpacityRange.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          chainOpacityRange.oninput = function (e){
+            cartoon_left.setParameters({opacity: 1 - (e.target.value / 100) });
+            cartoon_right.setParameters({opacity: 1 - (e.target.value / 100) });
+          }
+          addElement(chainOpacityRange);
+          var backgroundButton = createElement("input", {
+            type: "button",
+            value: "light background"
+          });
+          backgroundButton.style.position = "relative";
+          backgroundButton.style.top = 0.40*Math.abs(wrap.offsetHeight) + "px";
+          backgroundButton.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          backgroundButton.onclick = function(e) {
+            if (stage.getParameters().backgroundColor == "black"){
+              stage.setParameters({
+                backgroundColor: "white"
+              });
+              backgroundButton.value = "dark background";
+              $('#chainOpacityRangeText').css('color', "black");
+              $('#opacityRangeText').css('color', "black");
+              $(backgroundButton).removeClass("btn-light");
+              $(backgroundButton).addClass("btn-dark");
+            } else {
+              stage.setParameters({
+                backgroundColor: "black"
+              });
+              backgroundButton.value = "light background";
+              $('#chainOpacityRangeText').css('color', "lightgrey");
+              $('#opacityRangeText').css('color', "lightgrey");
+              $(backgroundButton).removeClass("btn-dark");
+              $(backgroundButton).addClass("btn-light");
+            }
+          }
+          addElement(backgroundButton);
+          $(backgroundButton).addClass("btn btn-sm btn-light");
+          o.autoView();
+        });
+        var centerAllButton = createElement("input", {
+          type: "button",
+          value: "Center All"
+        });
+        centerAllButton.style.position = "relative";
+        centerAllButton.style.top = 0.35*Math.abs(wrap.offsetHeight) + "px";
+        centerAllButton.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+        centerAllButton.onclick = function(e) {
+          stage.autoView();
+        };
+        addElement(centerAllButton);
+        $(centerAllButton).addClass("btn btn-sm btn-secondary");
+      });
+  </script>
+{% endblock inline_javascript %}
