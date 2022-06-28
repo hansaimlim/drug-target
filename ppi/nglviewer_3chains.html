@@ -1,0 +1,569 @@
+{% extends "base.html" %}
+{% load static %}
+{% block header %}
+{% include 'header_400.html' %}
+{% endblock header %}
+
+{% block header_image %}
+{% include 'header_background_400.html' %}
+{% endblock header_image %}
+{% block content %}
+<div class="jumbotron-fluid bg-white">
+  <div class="row mt-4">
+    <div class="table-responsive">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>
+            &nbsp;
+          </th>
+          <th>
+            Chain
+          </th>
+          <th>
+            Gene
+          </th>
+          <th>
+            Gene IDs
+          </th>
+          <th>
+            Tissues
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr id="host_chain_text" style="background-color:#4169E1; color:white">
+          <td>
+            <span data-toggle="popover" data-trigger="hover" title="Template (host) chain"
+            data-content="Microbial protein may interact with this (host) chain by mimicking the mimic chain.">
+              Host chain
+            </span>
+          </td>
+          <td>
+            {{result.template_pdb.name}}_{{ result.interacting_chain_id }}
+          </td>
+          <td>
+            {% if result.interacting_gene.name %}
+            <a class="link"
+            href="https://www.uniprot.org/uniprot/{{ result.interacting_gene.uniprot_accession }}"
+            target="_blank"
+            rel="noopener noreferrer"><span class="link-on-blue">{{ result.interacting_gene.name }}</span>
+            </a>
+            {% else %}
+            Not available
+            {% endif %}
+          </td>
+          <td>
+              {{ result.interacting_gene.uniprot_accession }}, {{ result.interacting_gene.uniprot_protein_name }}
+          </td>
+          <td>
+            <span id="host_chain_tissue_expression" class="badge badge-secondary" style="font-size:0.75rem;"
+              data-toggle="popover" data-trigger="hover" title="Tissues expression: {{ result.interacting_chain_id }}" data-placement="bottom"
+              data-content="High expression in: {{ tissue_expression_host.high }}">
+              Tissues Expr.
+            </span>
+            <span id="host_chain_tissue_expression_not" class="badge badge-light" style="font-size:0.75rem;"
+              data-toggle="popover" data-trigger="hover" title="Not expressed: {{ result.interacting_chain_id }}" data-placement="bottom"
+              data-content="Not expressed in: {{ tissue_expression_host.not }}">
+              X Tissues
+            </span>
+          </td>
+        </tr>
+
+        <tr id="mimic_chain_text" style="background-color:#DC143C; color:white">
+          <td>
+            <span data-toggle="popover" data-trigger="hover" title="Template (mimic) chain"
+            data-content="Microbial protein mimics this chain to interact with the host chain.">
+              Mimic chain
+            </span>
+          </td>
+          <td>
+            {{result.template_pdb.name}}_{{ result.mimic_chain_id }}
+          </td>
+          <td>
+            {% if result.mimic_gene.name %}
+            <a class="link"
+            href="https://www.uniprot.org/uniprot/{{ result.mimic_gene.uniprot_accession }}"
+            target="_blank"
+            rel="noopener noreferrer"><span class="link-on-blue">{{ result.mimic_gene.name }}</span>
+            </a>
+            {% else %}
+            Not available
+            {% endif %}
+          </td>
+          <td>
+              {{ result.mimic_gene.uniprot_accession }}, {{ result.mimic_gene.uniprot_protein_name }}
+          </td>
+          <td>
+            <span id="mimic_chain_tissue_expression" class="badge badge-secondary" style="font-size:0.75rem;"
+              data-toggle="popover" data-trigger="hover" title="Tissues expression: {{ result.mimic_chain_id }}" data-placement="bottom"
+              data-content="High expression in: {{ tissue_expression_mimic.high }}">
+              Tissues Expr.
+            </span>
+            <span id="mimic_chain_tissue_expression_not" class="badge badge-light" style="font-size:0.75rem;"
+              data-toggle="popover" data-trigger="hover" title="Not expressed: {{ result.mimic_chain_id }}" data-placement="bottom"
+              data-content="Not expressed in: {{ tissue_expression_mimic.not }}">
+              X Tissues
+            </span>
+          </td>
+        </tr>
+        <tr id="target_chain_text" style="background-color:#FF7F50">
+          <td>
+            <span data-toggle="popover" data-trigger="hover" title="Microbe protein chain"
+            data-content="This protein is predicted to interact with the host protein via interface mimicry.">
+              Microbe protein
+            </span>
+          </td>
+          <td>
+            {{ result.target.name }}
+          </td>
+          <td>
+            {% if result.target.gene.name %}
+            <a class="link"
+            href="https://www.uniprot.org/uniprot/{{ result.target.gene.uniprot_accession }}"
+            target="_blank"
+            rel="noopener noreferrer"><span class="link-on-blue">{{ result.target.gene.name }}</span>
+            </a>
+            {% else %}
+            Not available
+            {% endif %}
+          </td>
+          <td>
+            {% if result.target.gene %}
+              {{ result.target.gene.uniprot_accession }}, {{ result.target.gene.uniprot_protein_name }}
+            {% else %}
+              Not available
+            {% endif %}
+          </td>
+          <td>
+            &nbsp;
+          </td>
+        </tr>
+        
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+
+  <div class="row mt-4 mb-1">
+    <div class="table-responsive">
+    <table id="result_table_main" class="table table-hover">
+      <thead class="thead-light">
+        <tr>
+          <th>&nbsp;</th>
+        <th>
+          <span data-toggle="popover" data-trigger="hover" title="Directly affected interaction"
+          data-content="The microbe protein is predicted to interfere with this host protein-protein interaction.">
+          Affected interaction
+          </span>
+        </th>
+        <th>
+          <span data-toggle="popover" data-trigger="hover" title="Directly affected interaction"
+          data-content="The predicted host-microbe interaction.">
+          Predicted interaction
+          </span>
+        </th>
+        <th>
+          <span data-toggle="popover" data-trigger="hover" title="Structure alignment threshold"
+            data-content="Structure alignment score between host-microbial chains. The higher, the better alignment.">
+            Alignment score
+          </span>
+        </th>
+        <th>
+          <span data-toggle="popover" data-trigger="hover" title="RosettaDock interaction score"
+          data-content="Interaction score from Rosetta docking. The lower the better. Typically, -5.0 or lower is expected for a good model complex.">
+            Docking score
+          </span>
+        </th>
+        </tr>
+      </thead>
+      <tbody id="result_table_body">
+      <tr>
+        <td>
+          <a href="{{ result.predicted_structure_file }}" class="btn btn-info btn-sm" role="button" download>Download</a>
+        </td>
+        <td>
+          {{ result.affected_ppi }}
+        </td>
+        <td>{{ result.predicted_ppi }}</td>
+        <td>{{ result.tmalign_score }}</td>
+        <td>{{ result.rosetta_interaction_score }}</td>
+      </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+
+  <div class="row">
+  <div class="viewport-wrap" style="position:relative;">
+    <div id="viewport" style="width:960px; height:800px;"
+    data-id="{{ result.predicted_structure_file }}">
+    </div>
+  </div>
+  </div>
+
+  <div class="row mt-1 mb-4">
+    <div class="col-sm-2">
+      <kbd>keyboard</kbd><br>
+      <kbd data-toggle="tooltip" title="Press i to spin">i</kbd> spin<br>
+      <kbd data-toggle="tooltip" title="Press k to rock">k</kbd> rock<br>
+      <kbd data-toggle="tooltip" title="Press p to resume/pause motion">p</kbd> pause<br>
+    </div>
+    <div class="col-sm-3">
+      <kbd>mouse</kbd><br>
+      <kbd data-toggle="tooltip" title="Scroll up/down to zoom in/out">scroll</kbd> zoom in/out<br>
+      <kbd data-toggle="tooltip" title="Left-click and move to rotate">drag-left</kbd> rotate<br>
+      <kbd data-toggle="tooltip" title="Right-click and move to translate">drag-right</kbd> translate<br>
+    </div>
+    <div class="col-sm-7">
+    </div>
+  </div>
+
+
+{% endblock %}
+
+{% block inline_javascript %}
+  <script src="{% static 'js/particles.min.js' %}"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="{% static 'js/ngl.js' %}"></script>
+  <script type="text/javascript">
+    $(document).ready(function(){
+      $('[data-toggle="tooltip"]').tooltip();
+      $('[data-toggle="popover"]').popover({
+            boundary:'window',
+            html: true
+          });
+      /* particlesJS.load(@dom-id, @path-json, @callback (optional)); */
+      var particles_config = "{% static 'js/particles.json' %}"
+      console.log(particles_config)
+      particlesJS.load('particles-js', particles_config, function() {
+        console.log("callback - particles config loaded");
+      });
+        var wrap = document.querySelector(".viewport-wrap")
+        var stage = new NGL.Stage( "viewport" );
+        function addElement (el) {
+          Object.assign(el.style, {
+            position: "absolute",
+            zIndex: 100
+          });
+          stage.viewer.container.appendChild(el);
+        };
+
+        function createElement (name, properties, style) {
+          var el = document.createElement(name);
+          Object.assign(el, properties);
+          Object.assign(el.style, style);
+          return el
+        };
+
+        function createSelect (options, properties, style) {
+          var select = createElement("select", properties, style);
+          options.forEach(function (d) {
+            select.add(createElement("option", {
+              value: d[ 0 ], text: d[ 1 ]
+            }));
+          });
+          return select
+        };
+
+        window.addEventListener( "resize", function( event ){
+            stage.handleResize();
+        }, false );
+
+        var mimic_gene_name = "{{ result.mimic_gene.name }}"
+        var interacting_gene_name = "{{ result.interacting_gene.name }}"
+        var target_name = "Pathogen-" + "{{ result.target.name }}"
+        var structure_file = "{{ result.predicted_structure_file }}"
+
+        var gold_color = "#FFD700" //gold
+        var royalblue_color = "#4169E1"
+        var crimson_color = "#DC143C"
+        var coral_color = "#FF7F50" // pathogen on crimson-mimic
+        var turq_color = "#00CED1" // pathogen on blue-mimic
+
+        // var chainData = {
+        //   "H": { text: interacting_gene_name, color: royalblue_color},
+        //   "M": { text: mimic_gene_name, color: crimson_color},
+        //   "p": { text: target_name, color: coral_color}
+        // }
+        stage.loadFile(structure_file).then(function (o) {
+          var cartoon_h1 = o.addRepresentation("cartoon",
+             {
+               color: royalblue_color,
+               sele: ":H",
+               visible: true,
+             }
+           );
+          var cartoon_m1 = o.addRepresentation("cartoon",
+             {
+               color: crimson_color,
+               sele: ":M",
+               visible: true,
+             }
+          );
+          var cartoon_p1 = o.addRepresentation("cartoon",
+             {
+               color: coral_color,
+               sele: ":p",
+               visible: true,
+             }
+          );
+          var cartoon_h2 = o.addRepresentation("cartoon",
+             {
+               color: crimson_color,
+               sele: ":H",
+               visible: false
+             }
+           );
+          var cartoon_m2 = o.addRepresentation("cartoon",
+             {
+               color: royalblue_color,
+               sele: ":M",
+               visible: false
+             }
+          );
+          var cartoon_p2 = o.addRepresentation("cartoon",
+             {
+               color: turq_color,
+               sele: ":p",
+               visible: false
+             }
+          );
+          var chain_color_mode = 1;
+          var current_h = cartoon_h1;
+          var current_m = cartoon_m1;
+          var current_p = cartoon_p1;
+
+          stage.autoView();
+          var ap = o.structure.getAtomProxy();
+          var pa = o.structure.getPrincipalAxes();
+          var q = pa.getRotationQuaternion();
+          q.multiply(o.quaternion.clone().inverse());
+          stage.animationControls.rotate(q, 1500);
+          stage.animationControls.move(o.getCenter(), 0);
+
+          var swapColorButton = createElement("input", {
+            type: "button",
+            value: "swap chain colors",
+          })
+          swapColorButton.style.position = "relative";
+          swapColorButton.style.top = 0.25*Math.abs(wrap.offsetHeight) + "px";
+          swapColorButton.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          swapColorButton.onclick = function(e) {
+            cartoon_h1.toggleVisibility();
+            cartoon_m1.toggleVisibility();
+            cartoon_p1.toggleVisibility();
+            cartoon_h2.toggleVisibility();
+            cartoon_m2.toggleVisibility();
+            cartoon_p2.toggleVisibility();
+            if (chain_color_mode == 1) {
+              chain_color_mode = 2;
+              current_h = cartoon_h2;
+              current_m = cartoon_m2;
+              current_p = cartoon_p2;
+              $('#target_chain_text').css('background-color', turq_color);
+              $('#host_chain_text').css('background-color', crimson_color);
+              $('#mimic_chain_text').css('background-color', royalblue_color);
+              $(hostButton).css("background-color", crimson_color);
+              $(mimicButton).css("background-color", royalblue_color);
+              $(pathogenButton).css("background-color", turq_color);
+            } else {
+              chain_color_mode = 1;
+              current_h = cartoon_h1;
+              current_m = cartoon_m1;
+              current_p = cartoon_p1;
+              $('#target_chain_text').css('background-color', coral_color);
+              $('#host_chain_text').css('background-color', royalblue_color);
+              $('#mimic_chain_text').css('background-color', crimson_color);
+              $(hostButton).css("background-color", royalblue_color);
+              $(mimicButton).css("background-color", crimson_color);
+              $(pathogenButton).css("background-color", coral_color);
+            }
+          }
+          addElement(swapColorButton);
+          $(swapColorButton).addClass("btn btn-sm btn-dark");
+
+          var hostButton = createElement("input", {
+            type: "button",
+            value: "toggle host chain",
+          })
+          hostButton.style.position = "relative";
+          hostButton.style.top = 0.05*Math.abs(wrap.offsetHeight) + "px";
+          hostButton.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          hostButton.onclick = function(e) {
+            current_h.toggleVisibility();
+          }
+          addElement(hostButton);
+          $(hostButton).addClass("btn btn-sm text-white");
+          $(hostButton).css("background-color", royalblue_color);
+          
+          var mimicButton = createElement("input", {
+            type: "button",
+            value: "toggle mimic chain"
+          })
+          mimicButton.style.position = "relative";
+          mimicButton.style.top = 0.10*Math.abs(wrap.offsetHeight) + "px";
+          mimicButton.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          mimicButton.onclick = function(e) {
+            current_m.toggleVisibility();
+          }
+          addElement(mimicButton);
+          $(mimicButton).addClass("btn btn-sm text-white");
+          $(mimicButton).css("background-color", crimson_color);
+          
+          var pathogenButton = createElement("input", {
+            type: "button",
+            value: "toggle microbial chain"
+          })
+          pathogenButton.style.position = "relative";
+          pathogenButton.style.top = 0.15*Math.abs(wrap.offsetHeight) + "px";
+          pathogenButton.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          pathogenButton.onclick = function(e) {
+            current_p.toggleVisibility();
+          }
+          addElement(pathogenButton);
+          $(pathogenButton).addClass("btn btn-sm text-white");
+          $(pathogenButton).css("background-color", coral_color);
+          
+
+          var defaultChainOpacity = 20;
+          cartoon_h1.setParameters({opacity: 1 - (defaultChainOpacity / 100) });
+          cartoon_m1.setParameters({opacity: 1 - (defaultChainOpacity / 100) });
+          cartoon_p1.setParameters({opacity: 1 - (defaultChainOpacity / 100) });
+          cartoon_h2.setParameters({opacity: 1 - (defaultChainOpacity / 100) });
+          cartoon_m2.setParameters({opacity: 1 - (defaultChainOpacity / 100) });
+          cartoon_p2.setParameters({opacity: 1 - (defaultChainOpacity / 100) });
+
+          var hostChainOpacityRangeText = createElement("span", {
+            innerText: "Host transparency",
+            id: "hostChainOpacityRangeText",
+          }, {color: "lightgrey"})
+          hostChainOpacityRangeText.style.position = "relative";
+          hostChainOpacityRangeText.style.top = 0.35*Math.abs(wrap.offsetHeight) + "px";
+          hostChainOpacityRangeText.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          addElement(hostChainOpacityRangeText);
+
+          var hostChainOpacityRange = createElement("input", {
+            type: "range",
+            value: defaultChainOpacity,
+            min: 0,
+            max: 100,
+            step: 1
+          })
+          hostChainOpacityRange.style.position = "relative";
+          hostChainOpacityRange.style.top = 0.38*Math.abs(wrap.offsetHeight) + "px";
+          hostChainOpacityRange.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          hostChainOpacityRange.oninput = function (e){
+            cartoon_h1.setParameters({opacity: 1 - (e.target.value / 100) });
+            cartoon_h2.setParameters({opacity: 1 - (e.target.value / 100) });
+          }
+          addElement(hostChainOpacityRange);
+
+          var mimicChainOpacityRangeText = createElement("span", {
+            innerText: "Mimic chain transparency",
+            id: "mimicChainOpacityRangeText",
+          }, {color: "lightgrey"})
+          mimicChainOpacityRangeText.style.position = "relative";
+          mimicChainOpacityRangeText.style.top = 0.41*Math.abs(wrap.offsetHeight) + "px";
+          mimicChainOpacityRangeText.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          addElement(mimicChainOpacityRangeText);
+
+          var mimicChainOpacityRange = createElement("input", {
+            type: "range",
+            value: defaultChainOpacity,
+            min: 0,
+            max: 100,
+            step: 1
+          })
+          mimicChainOpacityRange.style.position = "relative";
+          mimicChainOpacityRange.style.top = 0.44*Math.abs(wrap.offsetHeight) + "px";
+          mimicChainOpacityRange.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          mimicChainOpacityRange.oninput = function (e){
+            cartoon_m1.setParameters({opacity: 1 - (e.target.value / 100) });
+            cartoon_m2.setParameters({opacity: 1 - (e.target.value / 100) });
+          }
+          addElement(mimicChainOpacityRange);
+
+          var pathogenChainOpacityRangeText = createElement("span", {
+            innerText: "Microbial chain transparency",
+            id: "pathogenChainOpacityRangeText",
+          }, {color: "lightgrey"})
+          pathogenChainOpacityRangeText.style.position = "relative";
+          pathogenChainOpacityRangeText.style.top = 0.47*Math.abs(wrap.offsetHeight) + "px";
+          pathogenChainOpacityRangeText.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          addElement(pathogenChainOpacityRangeText);
+
+          var pathogenChainOpacityRange = createElement("input", {
+            type: "range",
+            value: defaultChainOpacity,
+            min: 0,
+            max: 100,
+            step: 1
+          })
+          pathogenChainOpacityRange.style.position = "relative";
+          pathogenChainOpacityRange.style.top = 0.50*Math.abs(wrap.offsetHeight) + "px";
+          pathogenChainOpacityRange.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          pathogenChainOpacityRange.oninput = function (e){
+            cartoon_p1.setParameters({opacity: 1 - (e.target.value / 100) });
+            cartoon_p2.setParameters({opacity: 1 - (e.target.value / 100) });
+          }
+          addElement(pathogenChainOpacityRange);
+
+          var centerAllButton = createElement("input", {
+            type: "button",
+            value: "center all"
+          })
+          centerAllButton.style.position = "relative";
+          centerAllButton.style.top = 0.20*Math.abs(wrap.offsetHeight) + "px";
+          centerAllButton.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          centerAllButton.onclick = function(e) {
+            stage.autoView();
+          }
+          addElement(centerAllButton);
+          $(centerAllButton).addClass("btn btn-sm btn-secondary");
+
+          var backgroundButton = createElement("input", {
+            type: "button",
+            value: "light background"
+          });
+          backgroundButton.style.position = "relative";
+          backgroundButton.style.top = 0.30*Math.abs(wrap.offsetHeight) + "px";
+          backgroundButton.style.right = 0.02*Math.abs(wrap.offsetWidth) + "px";
+          backgroundButton.onclick = function(e) {
+            if (stage.getParameters().backgroundColor == "black"){
+              stage.setParameters({
+                backgroundColor: "white"
+              });
+              backgroundButton.value = "dark background";
+              $('#hostChainOpacityRangeText').css('color', "black");
+              $('#mimicChainOpacityRangeText').css('color', "black");
+              $('#pathogenChainOpacityRangeText').css('color', "black");
+              $(backgroundButton).removeClass("btn-light");
+              $(backgroundButton).addClass("btn-dark");
+              $(swapColorButton).removeClass("btn-dark");
+              $(swapColorButton).addClass("btn-outline-dark");
+            } else {
+              stage.setParameters({
+                backgroundColor: "black"
+              });
+              backgroundButton.value = "light background";
+              $('#hostChainOpacityRangeText').css('color', "lightgrey");
+              $('#mimicChainOpacityRangeText').css('color', "lightgrey");
+              $('#pathogenChainOpacityRangeText').css('color', "lightgrey");
+              $(backgroundButton).removeClass("btn-dark");
+              $(backgroundButton).addClass("btn-light");
+              $(swapColorButton).removeClass("btn-outline-dark");
+              $(swapColorButton).addClass("btn-dark");
+            }
+          }
+          addElement(backgroundButton);
+          $(backgroundButton).addClass("btn btn-sm btn-light");
+        });
+        
+      });
+  </script>
+{% endblock inline_javascript %}
