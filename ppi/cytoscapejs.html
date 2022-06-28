@@ -1,0 +1,1058 @@
+{% extends "base_blank.html" %}
+{% load static %}
+{% load string_tags %}
+
+{% block header %}
+{% include 'header_400.html' %}
+{% endblock header %}
+
+{% block header_image %}
+{% include 'header_background_400.html' %}
+{% endblock header_image %}
+{% block navbar %}
+{% include 'navbar.html' %}
+{% endblock navbar %}
+<div id="loading-overlay"><div class="loader"></div></div>
+{% block content %}
+<div class="container-fluid mt-4 mb-4">
+  <div class="row mt-2 mb-2">
+    <div class="col-md-11 col-sm-12 mt-4 mb-4">
+      <p>
+        <span class="font-times font-weight-bold" style="font-size:1.8rem;">Host-microbe interaction network.</span> 
+        <span class="font-times" style="font-size:1.2rem;color:#afafaf !important;">
+          Interaction network is visualized using Cytoscape.js in the screen below. Host and microbial protein nodes are clickable to show more details. 
+        </span>
+      </p>  
+    </div>
+  </div>
+  <div id="cy-legend"></div>
+  <div class="row mt-2 mb-2" id="cy">   
+  </div>
+</div>
+{% endblock %}
+{% block footer %}
+{% include 'footer.html' %}
+{% endblock footer %}
+{% block modal %}{% endblock modal %}
+{% block inline_javascript %}
+  <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+  <script src="https://unpkg.com/popper.js@1.14.4/dist/umd/popper.js"></script>
+  <script src="https://unpkg.com/tippy.js@2.6.0/dist/tippy.all.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.20.0/cytoscape.min.js" 
+    integrity="sha512-cjmYAonfXK+azDmWqvnqq8xmygHRHqVI7S0zuRxQnvcYVeoakwthRX6pPKoXfG1oIjDvMUtteRV9PhQjJwKWxQ==" 
+    crossorigin="anonymous" referrerpolicy="no-referrer">
+  </script>
+  <script src="https://unpkg.com/cytoscape-popper@1.0.2/cytoscape-popper.js"></script>
+  <script src="{% static 'js/cytoscape-node-html-label.min.js' %}"></script>
+  <script src="{% static 'js/cytoscape-navigator.js' %}"></script>
+  <script src="{% static 'js/cytoscape-expand-collapse.js' %}"></script>
+  <script src="{% static 'js/cytoscape-context-menus.js' %}"></script>
+  <script type="text/javascript">
+    var nodeColors = {
+      gene: "#B7B7B7", //gray
+      geneHover: "#4169E1", //royalblue
+      geneSelected: "#4169E1", //royalblue
+      disease: "#FFD700", //gold
+      diseaseHover: "#FF8C00", //darkorange
+      diseaseSelected: "#FF8C00",
+      microbe: "#FF4500", //orangered
+      microbeHover: "#FFA07A", //lightsalmon
+      microbeSelected: "#FFA07A",
+      microbeModeled: "#DC143C", //crimson
+      microbeModeledHover: "#FFA07A",
+      microbeModeledSelected: "#FFA07A",
+    };
+    var nodeSizes = {
+      geneWidth: "36px",
+      geneHeight: "36px",
+      diseaseWidth: "26px",
+      diseaseHeight: "26px",
+      microbeWidth: "20px",
+      microbeHeight: "20px",
+    }
+    var edgeColors = {
+      hostMimic: "#DCDCDC", //lightgray
+      hostMimicHover: "#1E90FF", //dodgerblue
+      hostMimicSelected: "#1E90FF",
+      geneDisease: "#F0E68C", //khaki
+      geneDiseaseHover: "#BDB76B", // darkkhaki
+      geneDiseaseSelected: "#BDB76B",
+      hostMicrobe: "#FF7F50", //coral
+      hostMicrobeHover: "#FF6347", //tomato
+      hostMicrobeSelected: "#FF6347",
+    };
+    var edgeSizes = {
+      hostMimic: "3px",
+      hostMimicHover: "5px",
+      hostMimicSelected: "3px",
+      hostMicrobe: "1px",
+      hostMicrobeHover: "3px",
+      hostMicrobeSelected: "1px",
+      geneDisease: "1px",
+      geneDiseaseHover: "3px",
+      geneDiseaseSelected: "1px"
+    }
+
+    var nodes_legend = [
+      {
+        "data": {
+          "id": "host-mimic-legend-1",
+          "pk": "1",
+          "name": "Host (Mimic) Protein",
+          "uniprot": "UniprotAccession",
+          "organism_name": "None",
+          "organism_taxid": "None",
+        },
+        "classes": "host-mimic",
+        "group": "nodes",
+        "removed": false,
+        "selected": false,
+        "selectable": true,
+        "locked": false,
+        "grabbed": false,
+        "grabbable": true,
+      },
+      {
+        "data": {
+          "id": "host-mimic-legend-2",
+          "pk": "2",
+          "name": "Host protein (homo-N-mer)",
+          "uniprot": "UniprotAccession",
+          "organism_name": "Human",
+          "organism_taxid": "9606",
+        },
+        "classes": "host-mimic",
+        "group": "nodes",
+        "removed": false,
+        "selected": false,
+        "selectable": true,
+        "locked": false,
+        "grabbed": false,
+        "grabbable": true,
+      },
+      {
+        "data": {
+          "id": "microbe-legend-1",
+          "pk": "1",
+          "name": "Microbial protein",
+          "uniprot": "None",
+          "organism_name": "None",
+          "organism_taxid": "None",
+        },
+        "classes": "microbe",
+        "group": "nodes",
+        "group": "nodes",
+        "removed": false,
+        "selected": false,
+        "selectable": true,
+        "locked": false,
+        "grabbed": false,
+        "grabbable": true,
+      },
+      {
+        "data": {
+          "id": "microbe-legend-2",
+          "pk": "2",
+          "name": "Microbial protein (modeled)",
+          "uniprot": "None",
+          "organism_name": "None",
+          "organism_taxid": "None",
+        },
+        "classes": "microbe-modeled",
+        "group": "nodes",
+        "group": "nodes",
+        "removed": false,
+        "selected": false,
+        "selectable": true,
+        "locked": false,
+        "grabbed": false,
+        "grabbable": true,
+      },
+      {
+        "data": {
+          "id": "disease-legend-1",
+          "pk": "1",
+          "name": "Disease",
+          "uniprot": "None",
+          "organism_name": "None",
+          "organism_taxid": "None",
+        },
+        "classes": "disease",
+        "group": "nodes",
+        "group": "nodes",
+        "removed": false,
+        "selected": false,
+        "selectable": true,
+        "locked": false,
+        "grabbed": false,
+        "grabbable": true,
+      }
+    ];
+    var edges_legend = [
+      {
+        "data": {
+          "id": "homo-n-mer-1",
+          "pk": "1",
+          "source": "host-mimic-legend-2",
+          "target": "host-mimic-legend-2",
+        },
+        "classes": "host-mimic-edge loop",
+        "group": "edges",
+        "removed": false,
+        "selected": false,
+        "selectable": true,
+        "locked": false,
+        "grabbed": false,
+        "grabbable": true,
+      }
+    ];
+    var cy_legend = cytoscape({
+      container: document.getElementById("cy-legend"),
+      ready: function(){
+
+      },
+      style: [
+        {
+          selector: "core",
+          css: {
+            "active-bg-size": 0
+          }
+        },
+        {
+          selector: "node",
+          css: {
+            width: "36px",
+            height: "36px",
+            content: "data(name)",
+            "text-valign": "center",
+            "text-halign": "right",
+            "font-size": "12px",
+            "font-family": "Arial sans-serif",
+            "background-opacity": "1",
+          }
+        },
+        {
+          selector: "node.host-mimic",
+          css: {
+            width: nodeSizes.geneWidth,
+            height: nodeSizes.geneHeight,
+            "background-color": nodeColors.gene,
+          }
+        },
+        {
+          selector: "node.host-mimic.hover",
+          css: {
+            "background-color": nodeColors.geneHover,
+          }
+        },
+        {
+          selector: "node.host-mimic:selected",
+          css: {
+            "background-color": nodeColors.geneSelected,
+          }
+        },
+        {
+          selector: "node.microbe",
+          css: {
+            width: nodeSizes.microbeWidth,
+            height: nodeSizes.microbeHeight,
+            "background-color": nodeColors.microbe,
+          }
+        },
+        {
+          selector: "node.microbe.hover",
+          css: {
+            "background-color": nodeColors.microbeHover,
+          }
+        },
+        {
+          selector: "node.microbe:selected",
+          css: {
+            "background-color": nodeColors.microbeSelected,
+          }
+        },
+        {
+          selector: "node.disease",
+          css: {
+            width: nodeSizes.diseaseWidth,
+            height: nodeSizes.diseaseHeight,
+            "background-color": nodeColors.disease,
+          }
+        },
+        {
+          selector: "node.microbe-modeled",
+          css: {
+            width: nodeSizes.microbeWidth,
+            height: nodeSizes.microbeHeight,
+            "background-color": nodeColors.microbeModeled
+          }
+        },
+        {
+          selector: "node.microbe-modeled.hover",
+          css: {
+            "background-color": nodeColors.microbeModeledHover,
+          }
+        },
+        {
+          selector: "node.microbe-modeled:selected",
+          css: {
+            "background-color": nodeColors.microbeModeledSelected,
+          }
+        },
+        {
+          selector: "node.disease.hover",
+          css: {
+            "background-color": nodeColors.diseaseHover,
+          }
+        },
+        {
+          selector: "node.disease:selected",
+          css: {
+            "background-color": nodeColors.diseaseSelected,
+          }
+        },
+        {
+          selector: "edge.host-mimic",
+          style: {
+              width: edgeSizes.hostMimic,
+              "line-color": edgeColors.hostMimic,
+              "curve-style": "bezier",
+              label: ""
+          }
+        },
+        {
+          selector: "edge.host-mimic.hover",
+          style: {
+              width: edgeSizes.hostMimicHover,
+              "line-color": edgeColors.hostMimicHover,
+          }
+        },
+        {
+          selector: "edge.host-mimic:selected",
+          style: {
+              width: edgeSizes.hostMimicSelected,
+              "line-color": edgeColors.hostMimicSelected,
+          }
+        },
+      ],
+      layout: {
+                name: 'grid',
+                padding: 10,
+                //spacingFactor: 1.4
+            },
+            elements: {
+                nodes: nodes_legend,
+                edges: edges_legend
+            },
+            
+            zoomingEnabled: false,
+            userZoomingEnabled: false,
+            autoungrabify: false
+    });
+
+    var nodes = {{ nodes|safe }};
+    var edges = {{ edges|safe }};
+
+    var makeTippy = function(ele, text, className){
+      var ref = ele.popperRef();
+
+      var dummyDomEle = document.createElement('div');
+      var tip = tippy(dummyDomEle, {
+        getReferenceClientRect: ref.getBoundingClientRect,
+        trigger: 'manual',
+        content: function(){
+          var div = document.createElement('div');
+          div.innerHTML = text;
+          div.classList.add(className);
+          return div;
+        },
+        arrow: true,
+        placement: 'bottom',
+        hideOnClick: false,
+        sticky: "reference",
+        animation: 'scale',
+        theme: 'material',
+
+        // if interactive
+        interactive: true,
+        appendTo: document.body // or append dummyDomEle to document.body
+      });
+      return tip;
+    };
+
+    // if (typeof cytoscape("core", "expandCollapse") === "undefined"){
+    //     expandCollapse(cytoscape);
+    // }
+    if (typeof cytoscape("core", "nodeHtmlLabel") === "undfined"){
+        nodeHtmlLabel(cytoscape);
+    }
+    // if (typeof cytoscape("core", "contextMenus") === "undefined"){
+    //     contextMenus(cytoscape);
+    // }
+    if (typeof cytoscape("core", "navigator") === "undefined"){
+        navigator(cytoscape);
+    }
+
+    var options = {
+        entType: "ctxtap",
+        menuItems: [
+            {
+                id: "details",
+                content: "View details",
+                tooltipText: "View details",
+                selector: "node, edge",
+                onClickFunction: function(event){
+
+                },
+                hasTrailingDivider: true
+            },
+            // {
+            //     id: "generateReport",
+            //     content: "Generate report",
+            //     selector: "node, edge",
+            //     onClickFunction: function(event){
+
+            //     },
+            //     hasTrailingDivider: true
+            // }
+        ],
+        menuItemClasses: ["custom-menu-item", "custom-menu-item:hover"],
+        contextMenuClasses: ["custom-context-menu"]
+    };
+
+    var cy = cytoscape({
+        container: document.getElementById("cy"),
+        
+        ready: function(){
+            // var instance = this.contextMenus(options);
+            // var api = this.expandCollapse({
+            //     layoutBy: {
+            //         name: 'cose',
+            //         animate: "end",
+            //         randomize: false,
+            //         fit: false
+            //     },
+            //     fisheye: false,
+            //     animate: true,
+            //     undoable: false,
+            //     cueEnabled: true,
+            //     expandCollapseCuePosition: "top-left",
+            //     expandCollapseCueSize: 14,
+            //     expandCollapseCueLineSize: 22,
+            //     // expandCueImage: "/static/images/icons/download.svg",
+            //     // collapseCueImage: "/static/images/icons/download.svg",
+            //     expandCollapseCueSensitivity: 1,
+            //     edgeTypeInfo: "edgeType",
+            //     groupEdgesOfSameTypeOnCollapse: false,
+            //     allowNestedEdgeCollapse: true,
+            //     zIndex: 9999
+            // });
+
+            // document
+            //   .getElementById("collapseAll")
+            //   .addEventListener("click", function(){
+            //       //api.collapseAll();
+            //   });
+            // document
+            //   .getElementById("expandAll")
+            //   .addEventListener("click", function(){
+            //       //api.expandAll();
+            //   });
+            // document
+            //   .getElementById("adminView")
+            //   .addEventListener("click", function(){
+
+            //   });
+            // document
+            //   .getElementById("usageView")
+            //   .addEventListener("click", function(){
+
+            //   });
+            },
+
+            style: [
+                // core
+                {
+                    selector: "core",
+                    css: {
+                        "active-bg-size": 0 // size of active background indicator
+                    }
+                },
+
+                // node
+                {
+                    selector: "node",
+                    css: {
+                        width: "36px",
+                        height: "36px",
+                        content: "data(name)",
+                        "text-valign": "bottom",
+                        "text-halign": "center",
+                        "font-size": "10px",
+                        "font-family": "Arial sans-serif",
+                        "background-opacity": "1",
+                    }
+                },
+
+                // group
+                {
+                    selector: "$node > node",
+                    css: {
+                        "background-color": "#fff",
+                        "background-opacity": "1",
+                        "border-width": "1px",
+                        "border-color": "#dcdcdc",
+                        label: "data(name)",
+                        color: "#000",
+                        shape: "rectangle",
+                        content: "data(name)",
+                        "text-opacity": "0.62",
+                        "font-size": "10px",
+                        "text-wrap": "none",
+                        "text-max-width": "45px",
+                        "padding-top": "16px",
+                        "padding-left": "16px",
+                        "padding-bottom": "16px",
+                        "padding-right": "16px"
+                    }
+                },
+                {
+                  selector: "node.host-mimic",
+                  css: {
+                    width: nodeSizes.geneWidth,
+                    height: nodeSizes.geneHeight,
+                    "background-color": nodeColors.gene,
+                  }
+                },
+                {
+                  selector: "node.host-mimic.hover",
+                  css: {
+                    "background-color": nodeColors.geneHover,
+                  }
+                },
+                {
+                  selector: "node.host-mimic:selected",
+                  css: {
+                    "background-color": nodeColors.geneSelected,
+                  }
+                },
+                {
+                  selector: "node.microbe",
+                  css: {
+                    width: nodeSizes.microbeWidth,
+                    height: nodeSizes.microbeHeight,
+                    "background-color": nodeColors.microbe,
+                  }
+                },
+                {
+                  selector: "node.microbe.hover",
+                  css: {
+                    "background-color": nodeColors.microbeHover,
+                  }
+                },
+                {
+                  selector: "node.microbe:selected",
+                  css: {
+                    "background-color": nodeColors.microbeSelected,
+                  }
+                },
+                {
+                  selector: "node.microbe-modeled",
+                  css: {
+                    width: nodeSizes.microbeWidth,
+                    height: nodeSizes.microbeHeight,
+                    "background-color": nodeColors.microbeModeled
+                  }
+                },
+                {
+                  selector: "node.microbe-modeled.hover",
+                  css: {
+                    "background-color": nodeColors.microbeModeledHover,
+                  }
+                },
+                {
+                  selector: "node.microbe-modeled:selected",
+                  css: {
+                    "background-color": nodeColors.microbeModeledSelected,
+                  }
+                },
+                {
+                  selector: "node.disease",
+                  css: {
+                    width: nodeSizes.diseaseWidth,
+                    height: nodeSizes.diseaseHeight,
+                    "background-color": nodeColors.disease,
+                  }
+                },
+                {
+                  selector: "node.disease.hover",
+                  css: {
+                    "background-color": nodeColors.diseaseHover,
+                  }
+                },
+                {
+                  selector: "node.disease:selected",
+                  css: {
+                    "background-color": nodeColors.diseaseSelected,
+                  }
+                },
+
+                // edge
+                {
+                    selector: "edge.host-mimic",
+                    style: {
+                        width: edgeSizes.hostMimic,
+                        "line-color": edgeColors.hostMimic,
+                        "curve-style": "bezier",
+                        label: ""
+                    }
+                },
+                {
+                    selector: "edge.host-mimic.hover",
+                    style: {
+                        width: edgeSizes.hostMimicHover,
+                        "line-color": edgeColors.hostMimicHover,
+                    }
+                },
+                {
+                    selector: "edge.host-mimic:selected",
+                    style: {
+                        width: edgeSizes.hostMimicSelected,
+                        "line-color": edgeColors.hostMimicSelected,
+                    }
+                },
+                {
+                  selector: "edge.host-microbe",
+                  style: {
+                    width: edgeSizes.hostMicrobe,
+                    "line-color": edgeColors.hostMicrobe,
+                    "target-arrow-color": edgeColors.hostMicrobe,
+                    "target-arrow-shape": "vee",
+                  },
+                },
+                {
+                  selector: "edge.host-microbe.hover",
+                  style: {
+                    width: edgeSizes.hostMicrobeHover,
+                    "line-color": edgeColors.hostMicrobeHover,
+                    "target-arrow-color": edgeColors.hostMicrobeHover,
+                    "target-arrow-shape": "vee",
+                  }
+                },
+                {
+                  selector: "edge.host-microbe:selected",
+                  style: {
+                    width: edgeSizes.hostMicrobeSelected,
+                    "line-color": edgeColors.hostMicrobeSelected,
+                    "target-arrow-color": edgeColors.hostMicrobeSelected,
+                    "target-arrow-shape": "vee",
+                  }
+                },
+                {
+                  selector: "edge.gene-disease",
+                  style: {
+                    width: edgeSizes.geneDisease,
+                    "line-color": edgeColors.geneDisease,
+                    "curve-style": "bezier"
+                  }
+                },
+                {
+                  selector: "edge.gene-disease.hover",
+                  style: {
+                    width: edgeSizes.geneDiseaseHover,
+                    "line-color": edgeColors.geneDiseaseHover,
+                    "curve-style": "bezier"
+                  }
+                },
+                {
+                  selector: "edge.gene-disease:selected",
+                  style: {
+                    width: edgeSizes.geneDiseaseSelected,
+                    "line-color": edgeColors.geneDiseaseSelected,
+                    "curve-style": "bezier"
+                  }
+                }
+            ],
+            layout: {
+                name: 'cose',
+                padding: 10,
+                //spacingFactor: 1.4
+            },
+            elements: {
+                nodes: nodes,
+                edges: edges
+            },
+            
+            zoomingEnabled: true,
+            userZoomingEnabled: true,
+            autoungrabify: false
+    });
+    // cy.nodes('.host-mimic').forEach(function(n){
+    //   var tip = makeTippy(n, "data(name)", "host-mimic-node-tippy");
+    //   n.tippy = tip;
+    // });
+    // cy.nodes('.microbe').forEach(function(n){
+    //   var tip = makeTippy(n, "data(name)", "microbe-node-tippy");
+    //   n.tippy = tip;
+    // });
+    // cy.nodes('.disease').forEach(function(n){
+    //   var tip = makeTippy(n, "data(name)", "disease-node-tippy");
+    //   n.tippy = tip;
+    // });
+    // cy.edges('.host-microbe').forEach(function(n){
+    //   var tip= makeTippy(n, "HMI", "host-microbe-edge-tippy");
+    //   n.tippy = tip;
+    // })
+
+    cy.on("mouseover", "node", function(e){
+        e.target.addClass("hover");
+    });
+    cy.on("mouseout", "node", function(e){
+        e.target.removeClass("hover");
+    });
+    cy.on("mousedown", "node", function(e){
+        e.target.addClass("hover");
+    });
+    // cy.on("click", "node", function(e){
+    //     console.log("clicked: " + this.id());
+    // });
+
+    cy.on("mouseover", "edge", function(e){
+        e.target.addClass("hover");
+    });
+    cy.on("mouseout", "edge", function(e){
+        e.target.removeClass("hover");
+    });
+    
+
+    cy.nodeHtmlLabel([
+      {
+        query: "node.host-mimic:selected",
+        halign: "center",
+        valign: "bottom",
+        halignBox: "center",
+        valignBox: "bottom",
+        tpl: function(data){
+              var d = data.details;
+              var fdaApproved = d.fdaApprovedDrugTarget;
+              var potDrug = d.potentialDrugTarget;
+              var disRelated = d.diseaseRelated;
+              var tumorSuppressor = d.tumorSuppressor;
+              var cancerRelated = d.cancerRelated;
+              var div_open = `<div class="element node-popup host-mimic-node-popup ${data._hidden}">
+                          <p>
+                            <span class="node-popup-text-title text-dark">Uniprot:</span> <span class="node-popup-text-content text-dark">${data.uniprot}</span><br />
+                            <span class="node-popup-text-title text-dark">Organism:</span> <span class="node-popup-text-content text-dark">${data.organism_name} (${data.organism_taxid})</span>
+                            <br />
+                          `;
+
+              var div_mid = ``;
+              if (fdaApproved){
+                div_mid += `<span class="node-popup-text-content badge badge-pill badge-primary">FDA-approved</span>`;
+              }
+              if (tumorSuppressor){
+                div_mid += `<span class="node-popup-text-content badge badge-pill badge-success">Tumor suppressor</span>`;
+              }
+              if (potDrug){
+                div_mid += `<span class="node-poopup-text-content badge badge-pill badge-success">Potential drug target</span>`;
+              }
+              if (cancerRelated){
+                div_mid += `<span class="node-poopup-text-content badge badge-pill badge-danger">Cancer-related</span>`;
+              }
+              if (disRelated){
+                div_mid += `<br /><span class="node-popup-text-title text-dark">Related diseases: </span><span class="node-popup-text-content text-secondary">
+                              ${data.related_diseases}
+                            </span>`;
+              }
+              var div_close = `</p></div>`;
+              return div_open + div_mid + div_close;
+            }
+
+      },
+      {
+        query: "node.microbe:selected",
+        halign: "center",
+        valign: "bottom",
+        halignBox: "center",
+        valignBox: "bottom",
+        tpl: function(data){
+          var div = `<div class="element node-popup microbe-node-popup ${data._hidden}">
+                          <p>
+                            <span class="node-popup-text-title text-dark">Organism:</span> <span class="node-popup-text-content text-dark">${data.organism_name} (${data.organism_taxid})</span>
+                          </p>
+                      </div>`;
+          return div;
+        }
+      },
+      {
+        query: "node.microbe-modeled:selected",
+        halign: "center",
+        valign: "bottom",
+        halignBox: "center",
+        valignBox: "bottom",
+        tpl: function(data){
+          var div = `<div class="element node-popup microbe-node-popup ${data._hidden}">
+                          <p>
+                            <span class="node-popup-text-title text-dark">Organism:</span> <span class="node-popup-text-content text-dark">${data.organism_name} (${data.organism_taxid})</span>
+                          </p>
+                      </div>`;
+          return div;
+        }
+      },
+    ]);
+
+    cy.nodes().on("expandCollapse.beforeCollapseNode", function(e){
+        console.log("Triggered before a node is collapsed");
+    });
+    cy.nodes().on("expandCollapse.afterCollapseNode", function(e){
+        console.log("Triggered after a node is collapsed");
+    });
+    cy.nodes().on("expandCollapse.beforeExpandNode", function(e){
+        console.log("Triggered before a node is expanded");
+    });
+    cy.nodes().on("expandCollapse.afterExpandNode", function(e){
+        console.log("Triggered after a node is expanded");
+    });
+    cy.edges().on("expandCollapse.beforeCollapseEdge", function(e){
+        console.log("Triggered before an edge is collapsed");
+    });
+    cy.edges().on("expandCollapse.afterCollapseEdge", function(e){
+        console.log("Triggered after an edge is collapsed");
+    });
+    cy.edges().on("expandCollapse.beforeExpandEdge", function(e){
+        console.log("Triggered before an edge is expanded");
+    });
+    cy.edges().on("expandCollapse.afterExpandEdge", function(e){
+        console.log("Triggered after an edge is expanded");
+    });
+    cy.nodes().on("expandCollapse.beforeCollapseNode", function(e){
+        var node = this;
+        e.cy
+          .nodes()
+          .filter((entry) => entry.data().parent === node.id())
+          .map((entry) => entry.data("_hidden", "node-hidden"));
+        node.data("_hidden", "");
+    });
+    cy.nodes().on("expandCollapse.afterExpandNode", function(e){
+        var node = this;
+        e.cy
+          .nodes()
+          .filter((entry) => entry.data().parent === node.id())
+          .map((entry) => entry.data("_hidden", ""));
+        node.data("_hidden", "node-hidden");
+    });
+
+    // var navDefaults = {
+    //     container: false,
+    //     viewLiveFramerate: 0,
+    //     thumbnailEventFramerate: 30,
+    //     thumbnailLiveFramerate: false,
+    //     dblClickDelay: 300,
+    //     removeCustomContainer: false,
+    //     rerenderDelay: 100
+    // };
+    // var nav = cy.navigator(navDefaults);
+
+  </script>
+
+  <!-- <script type="text/javascript">
+    var nodes = {{ nodes|safe }}
+    var edges = {{ edges|safe }}
+    console.log(nodes);
+    console.log(edges);
+    $(document).ready(function(){
+      $('[data-toggle="popover"]').popover({
+            boundary:'window',
+            html: true
+          });
+      $('[data-toggle="collapse"]').collapse();
+      var h = function(tag, attrs, children){
+      var el = document.createElement(tag);
+      Object.keys(attrs).forEach(function(key){
+          var val = attrs[key];
+          el.setAttribute(key, val);
+        });
+        children.forEach(function(child){
+          el.appendChild(child);
+        });
+        return el;
+      };
+      var t = function(text){
+        var el = document.createTextNode(text);
+        return el;
+      };
+      var makeTippy = function(node, html){
+        return tippy( node.popperRef(), {
+          html: html,
+          trigger: 'manual',
+          arrow: true,
+          placement: 'bottom',
+          hideOnClick: false,
+          interactive: true,
+          animation: 'scale',
+          theme: 'material',
+          allowHTML: true,
+        } ).tooltips[0];
+      };
+      var hideTippy = function(node){
+        var tippy = node.data('tippy');
+        if(tippy != null){
+          tippy.hide();
+        }
+      };
+      
+      var cy = cytoscape({
+        container: $('#cy'),
+        style: cytoscape
+          .stylesheet()
+          .selector("node")
+          .css({
+            shape: "ellipse",
+            content: "data(name)",
+            "font-size": "8px",
+            //"text-valign": "center",
+            //"text-outline-width": 0,
+            //"text-outline-color": "data(nodeColor)",
+            //"bacground-color": "data(nodeColor)",
+            //color: "black",
+          })
+          .selector("node.hover")
+          .css({
+            "font-size": "9px",
+          })
+          .selector("node.disease")
+          .css({
+            shape: "triangle",
+            color: "#FA8072", //salmon
+            "background-color": "#FA8072"
+          })
+          .selector("node.microbe")
+          .css({
+            shape: "vee",
+            color: "#FF0000",  //red
+            "background-color": "#FF0000",
+          })
+          .selector("node.microbe-modeled")
+          .css({
+            shape: "vee",
+            color: "#DC143C",  //crimson
+            "background-color": "#DC143C",
+          })
+          .selector("node.disease-related")
+          .css({
+            shape: "round-hexagon",
+          })
+          .selector("node.cancer-related")
+          .css({
+            shape: "round-hexagon",
+          })
+          .selector("node.fda-approved-drug-target")
+          .css({
+            color: "#006400", //darkgreen
+            "background-color": "#006400"
+          })
+          .selector("node.potential-drug-target")
+          .css({
+            color: "#006400", //darkgreen
+            "background-color": "#006400"
+          })
+          .selector("edge")
+          .css({
+            "curve-style": "bezier",
+            width:1,
+            opacity: 0.7,
+            "target-arrow-shape": "none",
+            "source-arrow-shape": "none",
+            //"line-color": "data(edgeColor)",
+            //"source-arrow-color": "data(edgeSourceColor)",
+            //"target-arrow-color": "data(edgeTargetColor)",
+          })
+          .selector("edge.gene-disease")
+          .css({
+          })
+          .selector("edge.host-mimic")
+          .css({
+            
+          })
+          .selector("edge.host-microbe")
+          .css({
+            "target-arrow-shape": "triangle-backcurve",
+            "source-arrow-shape": "none"
+          })
+          .selector("edge.hover")
+          .css({
+            width:2,
+            "line-color": "#1E90FF",
+            "source-arrow-color": "#1E90FF",
+            "target-arrow-color": "#1E90FF"
+          })
+          .selector("edge:selected")
+          .css({
+            width:1,
+            "line-color": "#1E90FF",
+            "source-arrow-color": "#1E90FF",
+            "target-arrow-color": "#1E90FF"
+          }),
+          
+        elements: {
+          nodes: nodes,
+          edges: edges,
+        },
+        layout: { 
+          name: 'cose',
+          padding: 10,
+        },
+      });
+      cy.on("mouseover", "node", function(e){
+        e.target.addClass("hover");
+      })
+      cy.on("mouseout", "node", function(e){
+        e.target.removeClass("hover");
+      });
+      cy.on("mousedown", "node", function(e){
+        e.target.addClass("hover");
+      });
+      cy.on("click", "node", function(e){
+        console.log("clicked:" +this.id());
+      });
+      cy.on("mouseover", "edge", function(e){
+        e.target.addClass("hover");
+      });
+      cy.on("mouseout", "edge", function(e){
+        e.target.removeClass("hover");
+      });
+      var hideAllTippies = function(){
+        cy.nodes().forEach(hideTippy);
+      };
+      cy.on('tap', function(e){
+        if(e.target === cy){
+          hideAllTippies();
+        }
+      });
+      cy.on('tap', 'edge', function(e){
+        hideAllTippies();
+      });
+      cy.on('zoom pan', function(e){
+        hideAllTippies();
+      });
+      cy.nodes('.host-mimic').forEach(function(n){
+        var g = n.data('name');
+        var uniprot = n.data('uniprot');
+        var $links = [
+          {
+            name: uniprot,
+            url: 'https://www.uniprot.org/uniprot/' + uniprot
+          },
+        ].map(function( link ){
+          return h('a', { target: '_blank', href: link.url, 'class': 'tip-link' }, [ t(link.name) ]);
+        });
+        var tippy = makeTippy(n, h('div', {}, $links));
+        n.data('tippy', tippy);
+        n.on('click', function(e){
+          tippy.show();
+          cy.nodes().not(n).forEach(hideTippy);
+        });
+      });
+    }); //end document.ready(function())
+  </script> -->
+{% endblock inline_javascript %}
