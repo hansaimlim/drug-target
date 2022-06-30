@@ -1,0 +1,330 @@
+/* These styles are generated from project.scss. */
+
+.font-times {
+  font-family: Times New roman, Times, serif !important;
+}
+
+.user-guide-title {
+  font-family: Times New Roman, Times, serif !important;
+  font-size: 2.5rem !important;
+}
+
+.user-guide-subtitle {
+  font-family: Times New Roman, Times, serif !important;
+  font-size: 1.5rem !important;
+}
+
+.nav-dark-dropdown-item:hover {
+  background-color:#D3D3D3;
+  color:#000 !important;
+}
+
+.nav-item-text {
+  color:rgba(255,255,255,.79) !important;
+}
+
+.nav-item-text:hover {
+  color:rgba(255,255,255,1.0) !important;
+}
+
+.cover-panel {
+  height: 220px;
+  padding: 5px;
+  border-radius: 4px;
+  box-sizing: border-box;
+  z-index: 100;
+}
+
+.cover-panel:hover {
+  box-shadow: 0 6px 20px 0 #D3D3D3;
+}
+
+.cover-panel-header {
+  font-size: 1.5rem;
+}
+
+.cover-text {
+  font-family: Times New Roman, Times, serif;
+  position: absolute;
+  top: 22%;
+  left: 39%;
+  z-index:100;
+  display: block;
+  text-shadow: 3px 3px 5px #D3D3D3;
+  background-color: rgba(255,255,255,0.8);
+}
+
+.cover-text-small {
+  font-family: Times New Roman, Times, serif;
+  position: absolute;
+  top: 17%;
+  left: 67%;
+  z-index:100;
+  display: block;
+  text-shadow: 3px 3px 5px #D3D3D3;
+  background-color: rgba(255,255,255,0.8);
+}
+
+.cover-description {
+  font-family: Times New Roman, Times, serif;
+  font-size: 1.3rem;
+}
+
+.cover-description-small {
+  font-family: Times New Roman, Times, serif;
+  font-size: 1.3rem;
+}
+
+.header-background-image {
+  position: absolute;
+  top: 0%;
+  left: 0%;
+  z-index:0;
+  display: block;
+  opacity:0.31;
+}
+
+.particles-bg {
+  position: absolute;
+  z-index: -10;
+  width: 100%;
+  height: 800px;
+  top: 6%;
+  left: 0;
+  display: block;
+}
+.footer-bottom {
+  position: absolute;
+  z-index:10;
+  width: 100%;
+  top: 910px;
+}
+
+.footer-logo {
+  height: 55px;
+}
+
+.contact-form-row {
+  position: absolute;
+  z-index:100;
+  top: 12%;
+  left:30%;
+  width:100%;
+}
+.contact-form-box {
+  width: 40%;
+  height: 40%;
+}
+.contact-form-header {
+  text-shadow: 2px 2px 5px #D3D3D3;
+}
+.contact-form-box:hover {
+  box-shadow: 0 6px 20px 0 #D3D3D3;
+}
+.form-box:hover {
+  box-shadow: 0 6px 20px 0 #D3D3D3;
+}
+.form-text-shadow {
+  text-shadow: 2px 2px 5px #D3D3D3;
+}
+input[type="text"], input[type="email"] textarea {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+}
+label {
+  width: 100%;
+  margin: 4px 0;
+  display: inline-block;
+}
+
+#top-button {
+  display: none;
+  z-index: 100;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  border-radius: 1px;
+  font-size: 1.2rem;
+}
+
+#top-button-right {
+  text-align: center;
+  position: fixed;
+  right: 10%;
+  bottom: 200px;
+  display: none;
+  z-index: 100;
+  outline: none;
+  cursor: pointer;
+  border-radius: 50%;
+  padding: 5px 25px 15px 25px;
+  font-size: 2.3rem;
+}
+
+/* Bottom left text */
+.bottom-left {
+  position: absolute;
+  bottom: 4px;
+  left: 8px;
+}
+
+/* Top left text */
+.top-left {
+  position: absolute;
+  top: 8px;
+  left: 16px;
+}
+
+/* Top right text */
+.top-right {
+  position: absolute;
+  top: 8px;
+  right: 16px;
+}
+
+/* Bottom right text */
+.bottom-right {
+  position: absolute;
+  bottom: 8px;
+  right: 16px;
+}
+
+/* Centered text */
+.centered {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.hover-box-green {
+  border-color: #28a745;
+  color: #28a745;
+}
+
+.hover-box-green:hover {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.hover-text-green {
+  color: #28a745;
+}
+.hover-text-green:hover {
+  color: #fff;
+}
+
+.hover-box-blue {
+  border-color: #007bff;
+  color: #007bff;
+}
+
+.hover-box-blue:hover {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.hover-text-blue {
+  color: #007bff;
+}
+
+.hover-text-blue:hover {
+  color: #fff;
+}
+
+.hover-box-teal {
+  border-color: #17a2b8;
+  color: #17a2b8;
+}
+
+.hover-box-teal:hover {
+  background-color: #17a2b8;
+  color: #fff;
+}
+
+.hover-text-teal {
+  color: #17a2b8;
+}
+
+.hover-text-teal:hover {
+  color: #fff;
+}
+
+.img-hover-opacity {
+  opacity: 0.65 !important;
+}
+
+.img-hover-opacity:hover {
+  opacity: 0.95 !important;
+}
+
+.hover-shadow:hover {
+  box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.15)!important;
+}
+
+.blink {
+  -webkit-animation: blink 8s infinite both;
+          animation: blink 8s infinite both;
+}
+
+.blink-fast {
+  -webkit-animation: blink 2s infinite both;
+          animation: blink 2s infinite both;
+}
+
+@-webkit-keyframes blink {
+50%,
+75%,
+100% {
+  opacity: 1;
+}
+25%,
+75% {
+  opacity: 0.7;
+}
+}
+@keyframes blink {
+50%,
+75%,
+100% {
+  opacity: 1;
+}
+25%,
+75% {
+  opacity: 0.7;
+}
+}
+
+.zoom-05 {
+  transition: transform .2s;
+}
+
+.zoom-05:hover {
+  transform: scale(1.05);
+}
+
+.zoom-1 {
+  transition: transform .2s;
+}
+
+.zoom-1:hover {
+  transform: scale(1.1);
+}
+
+.zoom-2 {
+  transition: transform .2s;
+}
+
+.zoom-2:hover {
+  transform: scale(1.2);
+}
+
+.zoom-3 {
+  transition: transform .2s;
+}
+
+.zoom-3:hover {
+  transform: scale(1.3);
+}
