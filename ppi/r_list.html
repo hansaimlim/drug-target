@@ -1,0 +1,307 @@
+{% extends "base_blank.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block header %}
+{% include 'header_400.html' %}
+{% endblock header %}
+
+{% block header_image %}
+{% include 'header_background_400.html' %}
+{% endblock header_image %}
+
+{% block navbar %}
+{% include 'navbar.html' %}
+{% endblock navbar %}
+{% block content %}
+
+<div id="wrapper">
+  <div id="sidebar-wrapper" class="bg-light form-box font-times">
+    <div class="row mt-4 mb-0 progress" style="height:35px;">
+      <div class="progress-bar bg-gray1 text-black text-left form-text-shadow ml-2" style="width:100%; height:35px;">
+        <span style="font-size:1.0rem;" data-placement="top" data-toggle="popover" data-trigger="hover" title="Search our host-microbe interaction database"
+            data-content="Host-microbe interactions matching the filters will be shown">
+            Filter by microbial protein
+        </span>
+      </div>  
+    </div>
+    <div class="row sidebar-form-row" id="model-structure-filtering">
+      <div class="mt-0 mb-0">
+        <label for="model_option">
+          <span class="text-gray1">
+            Include AlphaFold2 models<br/><span class="text-red1">( Required* )</span>
+          </span>
+        </label>
+        {{form.model_option|as_crispy_field}}
+      </div>
+    </div>
+    <div class="row sidebar-form-row" id="microbe-pdb-filtering">
+      <div class="mt-0 mb-0">
+        <label for="microbe_pdb_id">
+          <span class="text-gray1">
+            Microbe PDB ID <span class="text-optionalgray">(optional)</span>
+          </span>
+        </label>
+        {{form.microbe_pdb_id|as_crispy_field}}
+      </div>
+    </div>
+    <div class="row sidebar-form-row" id="microbe-tax-id-filtering">
+      <div class="mt-0 mb-0">
+        <label for="microbe_tax_id">
+          <span class="text-gray1">
+            Microbe Taxonomy ID <span class="text-optionalgray">(optional)</span>
+          </span>
+        </label>
+        {{form.microbe_tax_id|as_crispy_field}}
+      </div>
+    </div>
+    <div class="row sidebar-form-row" id="microbe-organism-name-filtering">
+      <div class="mt-0 mb-0">
+        <label for="microbial_organism_name">
+          <span class="text-gray1">
+            Microbe organism <span class="text-optionalgray">(optional)</span>
+          </span>
+        </label>
+        {{form.microbe_organism_name|as_crispy_field}}
+      </div>
+    </div>
+    <div class="row sidebar-form-row" id="microbe-protein-name-filtering">
+      <div class="mt-0 mb-0">
+        <label for="microbe_protein_name">
+          <span class="text-gray1">
+            Microbial protein <span class="text-optionalgray">(optional)</span>
+          </span>
+        </label>
+        {{form.microbe_protein_name|as_crispy_field}}
+      </div>
+    </div>
+    <div class="row sidebar-form-row" id="microbe-gene-description-filtering">
+      <div class="mt-0 mb-0">
+        <label for="microbe_gene_description">
+          <span class="text-gray1">
+            Microbial protein description <span class="text-optionalgray">(optional)</span>
+          </span>
+        </label>
+        {{form.microbe_gene_description|as_crispy_field}}
+      </div>
+    </div>
+
+    <div class="row mt-1 mb-0 progress" style="height:50px;">
+      <div class="progress-bar bg-gray1 text-black text-left form-text-shadow ml-2" style="width:100%; height:50px;">
+        <span style="font-size:1.0rem;" data-placement="top" data-toggle="popover" data-trigger="hover" title="Search our host-microbe interaction database"
+            data-content="Host-microbe interactions matching the filters will be shown">
+            Filter by host protein<br/>It's the target of microbial protein
+        </span>
+      </div>  
+    </div>
+    <div class="row sidebar-form-row" id="host-protein-name-filtering">
+      <div class="mt-0 mb-0">
+        <label for="host_protein_name">
+          <span class="text-gray1">
+            Host (target) protein <span class="text-optionalgray">(optional)</span>
+          </span>
+        </label>
+        {{form.host_protein_name|as_crispy_field}}
+      </div>
+    </div>
+    <div class="row sidebar-form-row" id="host-gene-desciption-filtering">
+      <div class="mt-0 mb-0">
+        <label for="host_gene_description">
+          <span class="text-gray1">
+            Protein description <span class="text-optionalgray">(optional)</span>
+          </span>
+        </label>
+        {{form.host_gene_description|as_crispy_field}}
+      </div>
+    </div>
+    <div class="row mt-1 mb-0 progress" style="height:50px;">
+      <div class="progress-bar bg-gray1 text-black text-left form-text-shadow ml-2" style="width:100%; height:50px;">
+        <span style="font-size:1.0rem;" data-placement="top" data-toggle="popover" data-trigger="hover" title="Search our host-microbe interaction database"
+            data-content="Host-microbe interactions matching the filters will be shown">
+            Filter by mimic protein<br/>It's the competitor of microbe
+        </span>
+      </div>  
+    </div>
+    <div class="row sidebar-form-row" id="mimic-protein-name-filtering">
+      <div class="mt-0 mb-0">
+        <label for="mimic_protein_name">
+          <span class="text-gray1">
+            Mimic protein <span class="text-optionalgray">(optional)</span>
+          </span>
+        </label>
+        {{form.mimic_protein_name|as_crispy_field}}
+      </div>
+    </div>
+    <div class="row sidebar-form-row" id="mimic-gene-desciption-filtering">
+      <div class="mt-0 mb-0">
+        <label for="mimic_gene_description">
+          <span class="text-gray1">
+            Protein description <span class="text-optionalgray">(optional)</span>
+          </span>
+        </label>
+        {{form.mimic_gene_description|as_crispy_field}}
+      </div>
+    </div>
+
+    <div class="row mt-1 mb-0 progress" style="height:50px;">
+      <div class="progress-bar bg-gray1 text-black text-left form-text-shadow ml-2" style="width:100%; height:50px;">
+        <span style="font-size:1.0rem;" data-placement="top" data-toggle="popover" data-trigger="hover" title="Search our host-microbe interaction database"
+            data-content="Host-microbe interactions matching the filters will be shown">
+            Filter by microbe-mimic alignment<br/>Higher, better mimicked.
+        </span>
+      </div>  
+    </div>
+    <div class="row sidebar-form-row" id="hotspot-filtering">
+      <div class="mt-0 mb-0">
+        <label for="hotspot_option">
+          <span class="text-gray1">
+            Hotspot conservation <span class="text-optionalgray">(optional)</span>
+          </span>
+        </label>
+        {{form.hotspot_option|as_crispy_field}}
+      </div>
+    </div>
+    <div class="row sidebar-form-row" id="min-tmscore-filtering">
+      <div class="mt-0 mb-0">
+        <label for="min_tmalign_score">
+          <span class="text-gray1">
+            Min. align score <span class="text-optionalgray">(optional)</span>
+          </span>
+        </label>
+        {{form.min_tmalign_score|as_crispy_field}}
+      </div>
+    </div>
+    <div class="row sidebar-form-row" id="max-tmscore-filtering">
+      <div class="mt-0 mb-0">
+        <label for="max_tmalign_score">
+          <span class="text-gray1">
+            Max. align score <span class="text-optionalgray">(optional)</span>
+          </span>
+        </label>
+        {{form.max_tmalign_score|as_crispy_field}}
+      </div>
+    </div>
+
+    
+    <div class="row mt-1 mb-0 progress" style="height:50px;">
+      <div class="progress-bar bg-gray1 text-black text-left form-text-shadow ml-2" style="width:100%; height:50px;">
+        <span style="font-size:1.0rem;" data-placement="top" data-toggle="popover" data-trigger="hover" title="Search our host-microbe interaction database"
+            data-content="Host-microbe interactions matching the filters will be shown">
+            Filter by interaction energy<br/>Lower, stronger HMI.
+        </span>
+      </div>  
+    </div>
+    <div class="row sidebar-form-row" id="min-rosetta-score-filtering">
+      <div class="mt-0 mb-0">
+        <label for="min_rosetta_score">
+          <span class="text-gray1">
+            Min. Rosetta score <span class="text-optionalgray">(optional)</span>
+          </span>
+        </label>
+        {{form.min_rosetta_score|as_crispy_field}}
+      </div>
+    </div>
+    <div class="row sidebar-form-row" id="max-rosetta-score-filtering">
+      <div class="mt-0 mb-0">
+        <label for="max_rosetta_score">
+          <span class="text-gray1">
+            Max. Rosetta score <span class="text-optionalgray">(optional)</span>
+          </span>
+        </label>
+        {{form.max_rosetta_score|as_crispy_field}}
+      </div>
+    </div>
+    <div class="row sidebar-filter-button">
+      <button type="submit" class="btn bg-search-button text-white px-4" id="filterButton">
+          Apply
+      </button>
+    </div>
+  </div> 
+  <!-- #sidebar-wrapper -->
+
+  <!-- Page contents -->
+  <div id="page-content-wrapper">
+    <div class="container-fluid">
+      <div class="row text-center font-times">
+        <span class="font-weight-bold text-center" style="font-size:2.0rem;" data-toggle="popover" data-trigger="hover" title="HMI database"
+        data-content="Microbial protein may interact with one chain of the template, by mimicking the other chain.
+          The interacting chain must be a human protein, while mimicked chain could be from any organism.">
+        Host-Microbe Interactions
+        </span>
+      </div>
+      <div class="row">
+        <table class="table table-hover mt-2 dt-responsive dt-table" id="result_table_main">
+        </table>
+      </div>
+
+    </div>
+    <button id="menu-toggle" class="btn btn-info"><i id="toggleIcon" class="fa fa-angle-double-down"></i> Filter Menu <i class="fa fa-filter"></i></button> 
+    {% include 'result_menus.html' %}
+  </div>
+</div>
+<!-- #wrapper -->
+
+
+{% endblock %}
+{% block inline_javascript %}
+  <script type="text/javascript">
+    $(document).ready(function(){
+      $("#menu-toggle").click(function(e) {
+      e.preventDefault();
+        var isIE11 = !!navigator.userAgent.match(/Trident.*rv\:11\./);
+        $("#toggleIcon").toggleClass("fa fa-angle-double-down fa fa-angle-double-up")
+        $("#wrapper").toggleClass("toggled");
+        if(isIE11){
+              if($("#wrapper").hasClass("toggled")){
+          $('#sidebar-wrapper').css("margin-left", "-268px")
+        } else {
+          $('#sidebar-wrapper').css("margin-left", "-250px")	
+        }}
+      });
+      $('#id_hotspot_option').select2({
+        width: '100%' // need to override the changed default
+      });
+      /* particlesJS.load(@dom-id, @path-json, @callback (optional)); */
+      var particles_config = "{% static 'js/particles.json' %}"
+      particlesJS.load('particles-js', particles_config, function() {
+        console.log("callback - particles config loaded");
+      });
+      
+      AjaxDatatableViewUtils.initialize_table(
+        $('#result_table_main'),
+        "{% url 'hmi:ajax_datatable_results' %}",
+        {
+          processing: false,
+          autoWidth: false,
+          full_row_select: false,
+          scrollX: false
+        },{
+          //extra data
+          model_option: function() {return $('select#id_model_option').val()},
+          hotspot_option: function() {return $('select#id_hotspot_option').val()},
+          microbe_pdb_id: function() {return $('input#id_microbe_pdb_id').val()},
+          microbe_tax_id: function() {return $('input#id_microbe_tax_id').val()},
+          microbe_organism_name: function() {return $('input#id_microbe_organism_name').val()},
+          microbe_protein_name: function() {return $('input#id_microbe_protein_name').val()},
+          microbe_gene_description: function() {return $('input#id_microbe_gene_description').val()},
+          host_protein_name: function() {return $('input#id_host_protein_name').val()},
+          host_gene_description: function() {return $('input#id_host_gene_description').val()},
+          mimic_protein_name: function() {return $('input#id_mimic_protein_name').val()},
+          mimic_gene_description: function() {return $('input#id_mimic_gene_description').val()},
+          min_tmscore: function() {return $('input#id_min_tmalign_score').val()},
+          max_tmscore: function() {return $('input#id_max_tmalign_score').val()},
+          min_rosetta_score: function() {return $('input#id_min_rosetta_score').val()},
+          max_rosetta_score: function() {return $('input#id_max_rosetta_score').val()},
+        }
+      );
+
+      $('#filterButton').on('click', function(){
+        //redraw table
+
+        $('#result_table_main').DataTable().ajax.reload(null, false);
+
+      });
+    });
+
+
+  </script>
+{% endblock inline_javascript %}
