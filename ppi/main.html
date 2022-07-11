@@ -1,0 +1,242 @@
+
+
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block jslib %}
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+{% endblock jslib %}
+{% block header %}
+{% include 'header_400.html' %}
+{% endblock header %}
+
+{% block header_image %}
+{% include 'header_background_whole.html' %}
+{% endblock header_image %}
+{% block content %}
+{% if missing %}
+<div class="alert alert-danger alert-dismissable fade show my-4 py-2" style="border-left: 12px solid #dc3545!important;">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    <strong>Missing input.</strong> {{ missing }} is required.
+</div>
+{% endif %}
+{% if error_message %}
+<div class="alert alert-danger alert-dismissable fade show my-4 py-2" style="border-left: 12px solid #dc3545!important;">
+    <p>
+      <strong>
+        {{ error_message }}
+      </strong>
+    </p>
+</div>
+{% endif %}
+
+<div class="container card bg-light form-box mt-4 mb-4">
+
+  <div class="card-header bg-light text-center mt-2">
+    <span class="font-weight-bold font-times form-text-shadow" style="font-size:2rem;">
+        Run HMI-PRED 2.0
+    </span>
+  </div>
+
+  <form action="" method="post" id="jobSubmitForm" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="card-body bg-light mt-2">
+      <div class="form-row mt-2 mb-2 progress" style="height:40px;">
+        <div class="progress-bar bg-gray1 text-black text-left ml-2" style="width:100%; height:40px;">
+          <span style="font-size:1.1rem;" data-placement="top" data-toggle="popover" data-trigger="hover" title="Microbe protein input"
+          data-content="The protein (chain) from microbiome that might interact with a host (human) protein">
+              Microbial protein <span class="text-red1">( Required* )</span>
+          </span>
+        </div>  
+      </div>
+
+    <div class="form-row mb-0 mt-1">
+      <div class="form-group col-md-6 col-sm-12">
+        {{ form.target_option|as_crispy_field }}
+      </div>
+    </div>
+    <div class="form-row mb-0 mt-0">
+      <div class="form-group col-md-6 mb-0 mt-0" id="target_pdb">
+        <label for="target_pdb">
+          <span>Microbial protein (PDB ID)</span> <span class="text-red1">( Required* )</span>
+        </label>
+          {{ form.target_pdb|as_crispy_field }}
+      </div>
+      <div class="form-group col-md-4 mb-0 mt-0" id="target_chain">
+        <label for="target_chain">
+          <span>Chain ID</span> <span class="text-optionalgray">(optional)</span>
+        </label>
+          {{ form.target_chain|as_crispy_field }}
+      </div>
+      <div class="form-group col-md-6 mb-0 mt-0" id="target_file">
+        <label for="target_file">
+          <span>Upload a file (.cif or .pdb)</span> <span class="text-red1">( Required* )</span>
+        </label>
+          {{ form.target_file|as_crispy_field }}
+      </div>
+      <div class="form-group col-md-4 mb-0 mt-0" id="target_name">
+        <label for="target_name">
+          <span>Microbial protein name</span> <span class="text-optionalgray">(optional)</span>
+        </label>
+          {{ form.target_name|as_crispy_field }}
+      </div>
+    </div>
+
+    <div class="form-row mt-0 mb-0 progress" style="height:40px;">
+      <div class="progress-bar bg-gray1 text-black text-left ml-2" style="width:100%; height:40px;">
+        <span style="font-size:1.1rem;" data-placement="top" data-toggle="popover" data-trigger="hover" title="Template input"
+        data-content="The known protein-protein complexes to search potential interface mimicry. 
+          The microbial protein may interact with one chain by mimicking the surface of the other chain of a template.">
+            Templates: host proteins <span class="text-red1">( Required* )</span>
+        </span>
+      </div>  
+    </div>
+
+    <div class="form-row mb-0 mt-1">
+        <div class="form-group col-md-4 mb-0 mt-0" id="template_option">
+            {{ form.template_option|as_crispy_field }}
+        </div>
+        <div class="form-group col-md-5 mb-0 mt-0" id="template_pdb">
+            {{ form.template_pdb|as_crispy_field }}
+        </div>
+
+        <div class="form-group col-md-6 mb-0 mt-0" id="template_file">
+          <label for="template_file">
+          <span data-toggle="popover" data-trigger="hover"
+          title="List of templates in text file" data-content="Text file containing one template per line.
+          Template may include chain ids separated by underscores. Under Templates/search page, users can search and obtain a list of available interfaces. Please read our tutorial page for more details.">
+          Upload a list of templates
+          </span> <span class="text-red1">( Required* )</span>
+          </label>
+            {{ form.template_file|as_crispy_field }}
+        </div>
+    </div>
+
+    <div class="form-row" id="advanced_options">
+      <div class="form-group col-md-4 mb-0" id="alignment_threshold">
+        <label for="alignment_threshold">
+        <span class="text-gray1" data-toggle="popover" data-trigger="hover" title="Structure alignment threshold"
+          data-content="Structure comparison level for pathogen-template proteins. Higher threshold, fewer results. Range: [0.3, 1.0], Default: 0.5">
+          TM-align threshold <span class="text-optionalgray">(optional)</span>
+        </span>
+        </label>
+          {{ form.alignment_threshold|as_crispy_field }}
+      </div>
+
+    </div>
+    {% if not request.user.is_authenticated %}
+      <div class="form-row mb-0 mt-0">
+        <div class="form-group col-md-5 mb-0 mt-0" id="email">
+            <label for="email">
+            <span class="text-gray1" style="font-size:0.9rem;" data-toggle="popover" data-trigger="hover" title="Email address (recommended)"
+            data-content="If provided, you will be notified for the current job. A registered user will be notified via the account email.">
+              Email address (recommended)
+            </span>
+            </label>
+            {{ form.email|as_crispy_field }}
+        </div>
+      </div>
+    {% endif %}
+    </div>
+
+    <div class="card-footer bg-light text-center mt-0 mb-2">
+      <div class="form-group col-md-12 col-sm-12 mb-0 mt-0">
+          <button type="submit" class="btn bg-search-button g-recaptcha text-white px-5" id="submitButton" 
+             data-sitekey="{{recaptcha_public_key}}" data-callback="populateResponse">
+              Run
+            </button>
+          <input type="hidden" id="captcha-response" name="captcha-response" value="">
+          <input type="reset" class="btn btn-secondary" value="Clear" onclick="window.location.href='{% url 'hmi:all' %}';return false;">
+      </div>
+    </div>
+  </form>
+
+</div>
+{% endblock %}
+{% block inline_javascript %}
+  <script src="{% static 'js/particles.min.js' %}"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script type="text/javascript">
+
+    $(document).ready(function() {
+      // recaptcha and submit form
+      var submitButton = $("#submitButton");
+      var submitForm = $("#jobSubmitForm");
+      submitRecaptcha(submitForm, submitButton);
+
+      $('[data-toggle="tooltip"]').tooltip();
+      $('[data-toggle="popover"]').popover({
+            boundary:'window',
+            html: true
+          });
+      /* particlesJS.load(@dom-id, @path-json, @callback (optional)); */
+      var particles_config = "{% static 'js/particles.json' %}"
+      console.log(particles_config)
+      particlesJS.load('particles-js', particles_config, function() {
+        console.log("callback - particles config loaded");
+      });
+      var target_option = $('input[name="target_option"]:checked').val();
+      var template_option = $('input[name="template_option"]:checked').val();
+
+      if (target_option == "pdbid"){
+        $("#target_pdb").show();
+        $("#target_chain").show();
+        $("#target_file").hide();
+        $("#target_name").hide();
+      }
+      else if (target_option == "upload"){
+        $("#target_pdb").hide();
+        $("#target_chain").hide();
+        $("#target_file").show();
+        $("#target_name").show();
+      }
+
+      if (template_option == "default"){
+        $("#template_pdb").hide();
+        $("#template_file").hide();
+      }
+      else if (template_option == "user_specified"){
+        $("#template_pdb").show();
+        $("#template_file").hide();
+      }
+      else if (template_option == "user_specified_list"){
+        $("#template_pdb").hide();
+        $("#template_file").show();
+      }
+
+      $('#div_id_target_option').on('change', function(){
+
+        var target_option = $('input[name="target_option"]:checked').val();
+
+        if (target_option == "pdbid"){
+          $("#target_pdb").show();
+          $("#target_chain").show();
+          $("#target_file").hide();
+          $("#target_name").hide();
+        }
+        else if (target_option == "upload"){
+          $("#target_pdb").hide();
+          $("#target_chain").hide();
+          $("#target_file").show();
+          $("#target_name").show();
+        }
+      });
+      $('#div_id_template_option').on('change', function(){
+        var template_option = $('input[name="template_option"]:checked').val();
+
+        if (template_option == "default"){
+          $("#template_pdb").hide();
+          $("#template_file").hide();
+        }
+        else if (template_option == "user_specified"){
+          $("#template_pdb").show();
+          $("#template_file").hide();
+        }
+        else if (template_option == "user_specified_list"){
+          $("#template_pdb").hide();
+          $("#template_file").show();
+        }
+      });
+    });
+  </script>
+{% endblock inline_javascript %}
